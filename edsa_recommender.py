@@ -45,7 +45,7 @@ def main():
 
     # DO NOT REMOVE the 'Recommender System' option below, however,
     # you are welcome to add more options to enrich your app.
-    page_options = ["Recommender System","Solution Overview"]
+    page_options = ["Recommender System","About Us","Exploratory Data Analysis","Solution Overview"]
 
     # -------------------------------------------------------------------
     # ----------- !! THIS CODE MUST NOT BE ALTERED !! -------------------
@@ -100,10 +100,53 @@ def main():
     # -------------------------------------------------------------------
 
     # ------------- SAFE FOR ALTERING/EXTENSION -------------------
+    #if page_selection == "Solution Overview":
+        #st.title("Solution Overview")
+        #st.write("Describe your winning approach on this page")
     if page_selection == "Solution Overview":
         st.title("Solution Overview")
-        st.write("Describe your winning approach on this page")
+        #st.write("Describe your winning approach on this page")
+        #st.title("Solution Overview")
+        # st.write("Describe your winning approach on this page")
+        if st.button("Click to compare Models"):
+        # Call your model prediction functions here and store the results
+        # You can use the user inputs from the input widgets as inputs to the models
+            with st.expander("Model Definitions"):
+                # Display the results side by side
+                st.subheader("Non_Negative Matrix Factorization Model:")
+                st.write("The Non-Negative Matrix Factorization (NMF) algorithm leverages principles from multivariate analysis \
+                        and linear algebra. Its purpose is to break down a given data matrix, represented as M, into the product of two matrices with lower ranks, \
+                        namely W and H. The sub-matrix W represents the NMF basis, while the sub-matrix H contains the corresponding coefficients.")
+                
+                st.subheader("Single Value Decomposition Model:")
+                st.write("Single Value Decomposition (SVD) is a fundamental matrix factorization technique used in linear algebra and numerical analysis. \
+                        The beauty of SVD lies in its ability to reduce the dimensionality of the original matrix while preserving its essential information. \
+                        By truncating the number of singular values and their corresponding vectors, we can approximate the original matrix using a lower-rank approximation.\
+                        It can be used to factorize a user-item interaction matrix to identify latent factors (features) that contribute to the preferences of users for different items. \
+                        This technique is known as matrix factorization and has been successfully applied in recommender systems to make personalized recommendations.")
 
+                st.subheader("Co-Clustering Model:")
+                st.write("Co-Clustering, also known as biclustering or co-clustering, is a machine learning technique used to simultaneously cluster both rows and columns of a data matrix. \
+                        It is particularly useful when dealing with data that exhibits natural grouping patterns in both dimensions. The goal of the Co-Clustering algorithm is to find an optimal \
+                        partitioning of the rows and columns that maximizes a clustering criterion, such as minimizing the sum of squared differences between elements within each cluster.")
+
+            with st.expander("Model Performance"):
+                st.write("RMSE is a popular evaluation metric in various machine learning tasks, particularly in regression problems, where the goal is to predict a continuous numerical output. \
+                         It provides a measure of the model's average prediction error, with a lower RMSE indicating better predictive accuracy.")
+                rmse_scores = [0.78, 0.81, 0.89]
+                trained_models = ['Single Value Decomposition', 'Single Value Decomposition', 'Co-Clustering']
+
+                model_performance = pd.DataFrame({'Model': trained_models, 'RMSE': rmse_scores})
+
+                # Display the model performance table
+                st.subheader("Model Performance:")
+                st.table(model_performance)
+
+                # Highlight the best model based on RMSE score
+                best_model = model_performance.loc[model_performance['RMSE'].idxmin(), 'Model']
+                st.subheader(f"The best model is {best_model} with RMSE: {model_performance['RMSE'].min()}")
+    # You may want to add more sections here for aspects such as an EDA,
+    # or to provide your business pitch.
     # You may want to add more sections here for aspects such as an EDA,
     # or to provide your business pitch.
 
