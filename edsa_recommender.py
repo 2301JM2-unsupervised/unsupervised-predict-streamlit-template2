@@ -149,6 +149,76 @@ def main():
     # or to provide your business pitch.
     # You may want to add more sections here for aspects such as an EDA,
     # or to provide your business pitch.
+    if page_selection == "About Us":
+        st.write("### Overview: Flex your Unsupervised Learning skills to generate movie recommendations")
+        
+        # You can read a markdown file from supporting resources folder
+        #if st.checkbox("Introduction"):
+        st.subheader("Introduction to Unsupervised Learning Predict")
+        st.write("""In todays technology driven world, recommender systems are socially and economically critical for ensuring that individuals can make appropriate choices surrounding the content they engage with on a daily basis. One application where this is especially true surrounds movie content recommendations; where intelligent algorithms can help viewers find great titles from tens of thousands of options.""")
+        st.write("""With this context, EDSA is challenging you to construct a recommendation algorithm based on content or collaborative filtering, capable of accurately predicting how a user will rate a movie they have not yet viewed based on their historical preferences.""")
+        st.write("""Providing an accurate and robust solution to this challenge has immense economic potential, with users of the system being exposed to content they would like to view or purchase - generating revenue and platform affinity.""")
+
+        #if st.checkbox("Problem Statement"):
+        st.subheader("Problem Statement of the Unsupervised Learning Predict")
+        st.write("Build recommender systems to recommend a movie")
+
+        #if st.checkbox("Data"):
+        st.subheader("Data Overview")
+        st.write("""This dataset consists of several million 5-star ratings obtained from users of the online MovieLens movie recommendation service. The MovieLens dataset has long been used by industry and academic researchers to improve the performance of explicitly-based recommender systems, and now you get to as well!""")
+
+        st.write("""For this Predict, we'll be using a special version of the MovieLens dataset which has enriched with additional data, and resampled for fair evaluation purposes.""")
+
+        st.write("""### Source:""") 
+        st.write("""The data for the MovieLens dataset is maintained by the GroupLens research group in the Department of Computer Science and Engineering at the University of Minnesota. Additional movie content data was legally scraped from IMDB""")
+
+
+        st.write("""### Supplied Files:
+        genome_scores.csv - a score mapping the strength between movies and tag-related properties. Read more here
+
+        genome_tags.csv - user assigned tags for genome-related scores
+
+        imdb_data.csv - Additional movie metadata scraped from IMDB using the links.csv file.
+
+        links.csv - File providing a mapping between a MovieLens ID and associated IMDB and TMDB IDs.
+
+        sample_submission.csv - Sample of the submission format for the hackathon.
+
+        tags.csv - User assigned for the movies within the dataset.
+
+        test.csv - The test split of the dataset. Contains user and movie IDs with no rating data.
+
+        train.csv - The training split of the dataset. Contains user and movie IDs with associated rating data.""")    
+    if page_selection == "Exploratory Data Analysis":
+        st.title('Exploratory Data Analysis')
+
+        if st.checkbox("ratings"):
+            st.subheader("Movie ratings")
+            #st.image('resources/imgs/rating.PNG',use_column_width=True)
+
+        # if st.checkbox("correlation"):
+        #     st.subheader("Correlation between features")
+        #     st.image('resources/imgs/correlation.png',use_column_width=True)
+        
+        if st.checkbox("genre wordcloud"):
+            st.subheader("Top Genres")
+            #st.image('resources/imgs/genre_wordcloud.png',use_column_width=True)
+        
+        if st.checkbox("genres"):
+            st.subheader("Top Genres")
+            #st.image('resources/imgs/top_genres.PNG',use_column_width=True)
+        
+        # if st.checkbox("movies released per year"):
+        #     st.subheader("Movies released per year")
+        #     st.image('resources/imgs/release_year.png',use_column_width=True)
+
+        if st.checkbox("tags"):
+            st.subheader("Top tags")
+            #st.image('resources/imgs/top_tags.PNG',use_column_width=True)
+
+        if st.checkbox("cast"):
+            st.subheader("Popular cast")
+            #st.image('resources/imgs/cast.PNG',use_column_width=True)
 
 
 if __name__ == '__main__':
