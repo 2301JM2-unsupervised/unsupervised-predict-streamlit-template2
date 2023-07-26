@@ -52,7 +52,8 @@ def main():
     # DO NOT REMOVE the 'Recommender System' option below, however,
     # you are welcome to add more options to enrich your app.
     page_options = ["Recommender System","About Us","Exploratory Data Analysis","Solution Overview"]
-    image = Image.open('resources/imgs/Smartbyte')
+    image = Image.open('resources/imgs/Smartbyte.jpeg')
+    st.sidebar.image(image)
     new_logo = image.resize((600,300))
     st.image(new_logo, use_column_width=True)
     # -------------------------------------------------------------------
