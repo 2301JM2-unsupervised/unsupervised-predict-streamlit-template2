@@ -150,45 +150,78 @@ def main():
     # You may want to add more sections here for aspects such as an EDA,
     # or to provide your business pitch.
     if page_selection == "About Us":
-        st.write("### Overview: Flex your Unsupervised Learning skills to generate movie recommendations")
+        st.write("### SmartByte Inc")
         
         # You can read a markdown file from supporting resources folder
         #if st.checkbox("Introduction"):
-        st.subheader("Introduction to Unsupervised Learning Predict")
-        st.write("""In todays technology driven world, recommender systems are socially and economically critical for ensuring that individuals can make appropriate choices surrounding the content they engage with on a daily basis. One application where this is especially true surrounds movie content recommendations; where intelligent algorithms can help viewers find great titles from tens of thousands of options.""")
-        st.write("""With this context, EDSA is challenging you to construct a recommendation algorithm based on content or collaborative filtering, capable of accurately predicting how a user will rate a movie they have not yet viewed based on their historical preferences.""")
-        st.write("""Providing an accurate and robust solution to this challenge has immense economic potential, with users of the system being exposed to content they would like to view or purchase - generating revenue and platform affinity.""")
+        st.subheader("Where Data Meets Intelligence")
+        st.write("""Welcome to SmartByte Inc. – Where Data Meets Intelligence!
+
+At SmartByte Inc., we are passionate about the transformative power of data science and its ability to revolutionize businesses across all industries. Our mission is to provide cutting-edge data solutions that empower companies to make data-driven decisions, gain valuable insights, and achieve unparalleled success in today's data-driven world.
+
+Who We Are:
+SmartByte Inc. is a leading data science company, comprised of a team of highly skilled data scientists, analysts, engineers, and industry experts. Our diverse and talented team is united by a common goal: to harness the potential of data and turn it into actionable intelligence for our clients.
+
+What We Do:
+We offer a comprehensive suite of data science services, tailored to meet the unique needs of businesses, large or small. From startups looking to gain a competitive edge to established enterprises aiming to optimize their operations, our solutions cater to all.
+
+1. Data Analysis and Insights:
+Our data experts excel at collecting, cleaning, and analyzing vast amounts of data, uncovering hidden patterns, and extracting valuable insights. We help businesses understand their data, identify key trends, and make informed decisions that lead to increased efficiency and profitability.
+
+2. Machine Learning and AI Solutions:
+Leveraging the power of machine learning and artificial intelligence, we develop custom algorithms and models to solve complex business challenges. Whether it's predictive analytics, recommendation systems, or natural language processing, our AI solutions pave the way for intelligent automation and enhanced customer experiences.
+
+3. Data Visualization:
+We understand that making data understandable and accessible is crucial for successful decision-making. Our data visualization experts create compelling and interactive dashboards that bring data to life, enabling our clients to grasp complex information effortlessly.
+
+4. Big Data Infrastructure:
+In the era of big data, having the right infrastructure is vital. We help businesses build robust and scalable data infrastructure, ensuring they can handle large volumes of data while maintaining data security and compliance.
+
+Why Choose SmartByte Inc.:
+- Expertise: Our team comprises industry-leading data scientists and professionals with a wealth of experience across diverse domains.
+- Innovation: We stay ahead of the curve by constantly exploring emerging technologies and trends in the data science landscape.
+- Customization: Every business is unique, and we tailor our solutions to address specific challenges and opportunities faced by our clients.
+- Client-Centric Approach: At SmartByte Inc., our clients' success is our top priority. We collaborate closely with our clients, ensuring their needs are met and expectations exceeded.
+
+Our Commitment:
+Data integrity, privacy, and security are at the core of everything we do. We adhere to the highest standards of data governance, ensuring our clients' data is handled responsibly and ethically.
+
+Join us on this exciting journey as we unlock the true potential of data science for your business. Together, we'll turn data into actionable intelligence, propelling your organization towards a brighter and more successful future.
+
+Contact us today to discover how SmartByte Inc. can transform your data into your most valuable asset. Let's embark on this data-driven adventure together!""")
+        #st.write("""With this context, EDSA is challenging you to construct a recommendation algorithm based on content or collaborative filtering, capable of accurately predicting how a user will rate a movie they have not yet viewed based on their historical preferences.""")
+        #st.write("""Providing an accurate and robust solution to this challenge has immense economic potential, with users of the system being exposed to content they would like to view or purchase - generating revenue and platform affinity.""")
 
         #if st.checkbox("Problem Statement"):
-        st.subheader("Problem Statement of the Unsupervised Learning Predict")
-        st.write("Build recommender systems to recommend a movie")
+        #st.subheader("Problem Statement of the Unsupervised Learning Predict")
+        #st.write("Build recommender systems to recommend a movie")
 
         #if st.checkbox("Data"):
-        st.subheader("Data Overview")
-        st.write("""This dataset consists of several million 5-star ratings obtained from users of the online MovieLens movie recommendation service. The MovieLens dataset has long been used by industry and academic researchers to improve the performance of explicitly-based recommender systems, and now you get to as well!""")
+        #st.subheader("Data Overview")
+        #st.write("""This dataset consists of several million 5-star ratings obtained from users of the online MovieLens movie recommendation service. The MovieLens dataset has long been used by industry and academic researchers to improve the performance of explicitly-based recommender systems, and now you get to as well!""")
 
-        st.write("""For this Predict, we'll be using a special version of the MovieLens dataset which has enriched with additional data, and resampled for fair evaluation purposes.""")
+        #st.write("""For this Predict, we'll be using a special version of the MovieLens dataset which has enriched with additional data, and resampled for fair evaluation purposes.""")
 
-        st.write("""### Source:""") 
-        st.write("""The data for the MovieLens dataset is maintained by the GroupLens research group in the Department of Computer Science and Engineering at the University of Minnesota. Additional movie content data was legally scraped from IMDB""")
+        #st.write("""### Source:""") 
+        #st.write("""The data for the MovieLens dataset is maintained by the GroupLens research group in the Department of Computer Science and Engineering at the University of Minnesota. Additional movie content data was legally scraped from IMDB""")
 
 
-        st.write("""### Supplied Files:
-        genome_scores.csv - a score mapping the strength between movies and tag-related properties. Read more here
+        #st.write("""### Supplied Files:
+        #genome_scores.csv - a score mapping the strength between movies and tag-related properties. Read more here
 
-        genome_tags.csv - user assigned tags for genome-related scores
+        #genome_tags.csv - user assigned tags for genome-related scores
 
-        imdb_data.csv - Additional movie metadata scraped from IMDB using the links.csv file.
+        #imdb_data.csv - Additional movie metadata scraped from IMDB using the links.csv file.
 
-        links.csv - File providing a mapping between a MovieLens ID and associated IMDB and TMDB IDs.
+        #links.csv - File providing a mapping between a MovieLens ID and associated IMDB and TMDB IDs.
 
-        sample_submission.csv - Sample of the submission format for the hackathon.
+        #sample_submission.csv - Sample of the submission format for the hackathon.
 
-        tags.csv - User assigned for the movies within the dataset.
+        #tags.csv - User assigned for the movies within the dataset.
 
-        test.csv - The test split of the dataset. Contains user and movie IDs with no rating data.
+        #test.csv - The test split of the dataset. Contains user and movie IDs with no rating data.
 
-        train.csv - The training split of the dataset. Contains user and movie IDs with associated rating data.""")    
+        #train.csv - The training split of the dataset. Contains user and movie IDs with associated rating data.""")    
     if page_selection == "Exploratory Data Analysis":
         st.title('Exploratory Data Analysis')
 
