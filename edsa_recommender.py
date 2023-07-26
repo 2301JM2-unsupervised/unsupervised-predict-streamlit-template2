@@ -39,6 +39,8 @@ from recommenders.content_based import content_model
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import seaborn as sns
+from PIL import Image
+
 
 
 # Data Loading
