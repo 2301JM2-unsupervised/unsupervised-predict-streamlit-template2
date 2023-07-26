@@ -38,6 +38,8 @@ from recommenders.collaborative_based import collab_model
 from recommenders.content_based import content_model
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
+import seaborn as sns
+
 
 # Data Loading
 title_list = load_movie_titles('resources/data/movies.csv')
