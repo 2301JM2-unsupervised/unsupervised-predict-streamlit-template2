@@ -50,7 +50,9 @@ def main():
     # DO NOT REMOVE the 'Recommender System' option below, however,
     # you are welcome to add more options to enrich your app.
     page_options = ["Recommender System","About Us","Exploratory Data Analysis","Solution Overview"]
-
+    image = Image.open('resources/imgs/Smartbyte')
+    new_logo = image.resize((600,300))
+    st.image(new_logo, use_column_width=True)
     # -------------------------------------------------------------------
     # ----------- !! THIS CODE MUST NOT BE ALTERED !! -------------------
     # -------------------------------------------------------------------
@@ -337,7 +339,7 @@ Contact us today to discover how SmartByte Inc. can transform your data into you
                 ax.set_title('Distribution of Movie Genres')
                 ax.tick_params(axis='x', rotation=90)
                 st.pyplot(fig)
-                st.write("Mere looking at the graph, we can tell that `Drama, Comedy, Thriller and Romance` stand out as the popular movie genres \n\
+                st.write("Merely looking at the graph, we can tell that `Drama, Comedy, Thriller and Romance` stand out as the popular movie genres \n\
                     Several factors attributes to why these genres stand out. Hence, Let us get an interesting wordcloud to showcase movie titles and \
                          the count of ratings to see if we could get any further insight on the movies")
             st.write("#")
