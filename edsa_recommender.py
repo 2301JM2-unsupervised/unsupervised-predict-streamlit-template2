@@ -223,35 +223,139 @@ Contact us today to discover how SmartByte Inc. can transform your data into you
 
         #train.csv - The training split of the dataset. Contains user and movie IDs with associated rating data.""")    
     if page_selection == "Exploratory Data Analysis":
-        st.title('Exploratory Data Analysis')
+            with st.expander("EDA Definition"):
+                st.write("Exploratory Data Analysis refers to the critical process of performing initial investigations on data so as to discover patterns,to spot anomalies,to test \
+                        hypothesis and to check assumptions with the help of summary statistics and graphical representations. On the following EDA we will explore the **MovieLens \
+                        Dataset** to check for insight. We will be carrying out an extensive data analysis, descriptive statistics and data visualisations, all in the bid to give us \
+                        an idea of what useful part of the data will be preprocessed in the Data Processing & feature engineering section in preparation for modeling.")
+                
+                df = pd.read_csv('resources/data/ratings.csv')
+                
+                # Create a bar chart for the distribution of ratings
+                # def plot_ratings_distribution(dataframe):
+            st.subheader("Plots")
+            with st.expander("Distribution of Ratings", expanded=True):
+                st.subheader("Distribution of Ratings")
+                rating_counts = df['rating'].value_counts()
+                fig, ax = plt.subplots()
+                ax.bar(rating_counts.index, rating_counts.values)
+                ax.set_xlabel('Rating')
+                ax.set_ylabel('Count')
+                ax.set_title('Distribution of Ratings')
+                st.pyplot(fig)
+                st.write("So we have our ITEM (Movies) rating ranging between `0.5` to `5.0` and most likely to be the target feature for Basic Recommendation i.e. if we are to recommend based on `userId` and `movieId` iteractions alone. \
+                            \
+    Also as we can see, majority of our Observations fall within the RATING range of `3.0` and `5.0` with `4.0` having the highest occurance with over `2.6 Million rating occurance`. This means that modelling by rating alone will not be entirely be representative of what the viewer may want since majority of ratings fall within the higher rates. Movie Contents/Types, User Preferences and other collaborative options, will have to be called into actions as distinguishing factor to tailoring down a recommendation to a user specification, which is what we want.")
+            st.write("#")
 
-        if st.checkbox("ratings"):
-            st.subheader("Movie ratings")
-            #st.image('resources/imgs/rating.PNG',use_column_width=True)
+            with st.expander("Plot of Key Genres", expanded=True):
+                st.subheader("Plot of Key Genress")
+                def wordcloud_generator(df, column):  
+                    """
+                    This function extracts all the unique keywords in a column
+                    and counts the number of times each keyword occurs in the column
+                    while ignoring words that are not meaningful.
+                    these keywords are then used to generate a word cloud 
+                    
+                    Input: df
+                        datatype: DataFrame
+                        column
+                        datatype: str
+                        
+                    Output: wordcloud
+                            Datatype: None
+                            
+                    """
+                    keyword_counts = {}
+                    keyword_pair = []
+                    words = dict()
+                    
+                    # list of words that should be ignored
+                    ignore = ['nan', ' nan', 'nan ', 'seefullsummary', ' seefullsummary', 'seefullsummary ']
+                    
+                    # Extract the unique keywords 
+                    for keyword in [keyword for keyword in df[column] if keyword not in ignore]:
+                        if keyword in keyword_counts.keys():
+                            keyword_counts[keyword] += 1
+                        else:
+                            keyword_counts[keyword] = 1
+                    
+                    # Pair the keywords with their frequencies
+                    for word,word_freq in keyword_counts.items():
+                        keyword_pair.append((word,word_freq))
+                    # Sort the keywords accprding to their frequencies
+                    keyword_pair.sort(key = lambda x: x[1],reverse=True)
+                    
+                    # Make it wordcloud-ready
+                    for s in keyword_pair:
+                        words[s[0]] = s[1]
+                        
+                    # Create a wordcloud using the top 2000 keywords
+                    wordcloud = WordCloud(width=800, 
+                                        height=500, 
+                                        background_color='black', 
+                                        max_words=2000,
+                                        max_font_size=110,
+                                        scale=3,
+                                        random_state=0,
+                                        colormap='Greens').generate_from_frequencies(words)
 
-        # if st.checkbox("correlation"):
-        #     st.subheader("Correlation between features")
-        #     st.image('resources/imgs/correlation.png',use_column_width=True)
-        
-        if st.checkbox("genre wordcloud"):
-            st.subheader("Top Genres")
-            #st.image('resources/imgs/genre_wordcloud.png',use_column_width=True)
-        
-        if st.checkbox("genres"):
-            st.subheader("Top Genres")
-            #st.image('resources/imgs/top_genres.PNG',use_column_width=True)
-        
-        # if st.checkbox("movies released per year"):
-        #     st.subheader("Movies released per year")
-        #     st.image('resources/imgs/release_year.png',use_column_width=True)
+                    return wordcloud 
+                movies = pd.read_csv('resources/data/movies.csv')
 
-        if st.checkbox("tags"):
-            st.subheader("Top tags")
-            #st.image('resources/imgs/top_tags.PNG',use_column_width=True)
+                movie_ratings = pd.merge(movies, df, on='movieId', how='left')
+                plot_genres = wordcloud_generator(movie_ratings,'genres')
+                
+                # Plot wordcloud
+                fig, ax = plt.subplots(figsize=(20, 8))
+                ax.imshow(plot_genres, interpolation='bilinear')
+                ax.axis('off')
+                ax.set_title('Plot Genre\n', fontsize=25)
+                st.pyplot(fig)
+            st.write("#")
 
-        if st.checkbox("cast"):
-            st.subheader("Popular cast")
-            #st.image('resources/imgs/cast.PNG',use_column_width=True)
+            with st.expander("Distribution of Movie Genres", expanded=True):
+                st.subheader("Distribution of Movie Genres")
+                movies = pd.read_csv('resources/data/movies.csv')
+
+                movie_genres = pd.DataFrame(movies['genres'].str.split("|").tolist(),
+                      index=movies['movieId']).stack()
+                movie_genres = movie_genres.reset_index([0, 'movieId'])
+                movie_genres.columns = ['movieId', 'Genre']
+
+                
+                fig, ax = plt.subplots()
+                genre_counts = movie_genres['Genre'].value_counts()
+                unique_colors = sns.color_palette('pastel', len(genre_counts))
+                ax.bar(genre_counts.index, genre_counts.values, color=unique_colors)
+                ax.set_xlabel('Genres')
+                ax.set_ylabel('Count')
+                ax.set_title('Distribution of Movie Genres')
+                ax.tick_params(axis='x', rotation=90)
+                st.pyplot(fig)
+                st.write("Mere looking at the graph, we can tell that `Drama, Comedy, Thriller and Romance` stand out as the popular movie genres \n\
+                    Several factors attributes to why these genres stand out. Hence, Let us get an interesting wordcloud to showcase movie titles and \
+                         the count of ratings to see if we could get any further insight on the movies")
+            st.write("#")
+
+            with st.expander("Top 10 Titles By Numnber of Ratings", expanded=True):
+                st.subheader("Top 10 Titles By Numnber of Ratings")
+                movies = pd.read_csv('resources/data/movies.csv')
+
+                movie_ratings = pd.merge(movies, df, on='movieId', how='left')
+                
+                top_movies = movie_ratings['title'].value_counts().nlargest(10)
+                unique_colors = sns.color_palette('pastel', len(top_movies))
+                fig, ax = plt.subplots()
+                ax.bar(top_movies.index, top_movies.values, color=unique_colors)
+                ax.set_xlabel('Movie Title')
+                ax.set_ylabel('Number of MovieIds')
+                ax.set_title('Top 10 Movies by Number of MovieIds')
+                ax.tick_params(axis='x', rotation=90)
+                st.pyplot(fig)
+                st.write("This reveals that all the movies in the top 10 by Number of Ratings were released in the 90's with only \
+                         one Indicating certain likeness for users to this class of classical movies.")
+            st.write("#")
 
 
 if __name__ == '__main__':
