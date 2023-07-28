@@ -1,0 +1,2023 @@
+
+final-notebook-team-jm2 (3).ipynb_
+Movie Recommendation Challenge 2023
+Unsupervised Learning Solution
+SmartByte - team JM2 EDSA
+© Explore Data Science Academy
+
+
+
+[ ]
+# This Python 3 environment comes with many helpful analytics libraries installed
+# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python
+# For example, here's several helpful packages to load
+
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+
+# Input data files are available in the read-only "../input/" directory
+# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory
+
+import os
+for dirname, _, filenames in os.walk('/kaggle/input'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+
+# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using "Save & Run All" 
+# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session
+/kaggle/input/edsa-movie-recommendation-predict/sample_submission.csv
+/kaggle/input/edsa-movie-recommendation-predict/movies.csv
+/kaggle/input/edsa-movie-recommendation-predict/imdb_data.csv
+/kaggle/input/edsa-movie-recommendation-predict/genome_tags.csv
+/kaggle/input/edsa-movie-recommendation-predict/genome_scores.csv
+/kaggle/input/edsa-movie-recommendation-predict/train.csv
+/kaggle/input/edsa-movie-recommendation-predict/test.csv
+/kaggle/input/edsa-movie-recommendation-predict/tags.csv
+/kaggle/input/edsa-movie-recommendation-predict/links.csv
+Recommender System
+[ ]
+!pip install comet_ml
+Requirement already satisfied: comet_ml in /opt/conda/lib/python3.10/site-packages (3.33.6)
+Requirement already satisfied: jsonschema!=3.1.0,>=2.6.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (4.17.3)
+Requirement already satisfied: psutil>=5.6.3 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (5.9.3)
+Requirement already satisfied: python-box<7.0.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (6.1.0)
+Requirement already satisfied: requests-toolbelt>=0.8.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (0.10.1)
+Requirement already satisfied: requests>=2.18.4 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (2.31.0)
+Requirement already satisfied: semantic-version>=2.8.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (2.10.0)
+Requirement already satisfied: sentry-sdk>=1.1.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (1.27.1)
+Requirement already satisfied: simplejson in /opt/conda/lib/python3.10/site-packages (from comet_ml) (3.19.1)
+Requirement already satisfied: six in /opt/conda/lib/python3.10/site-packages (from comet_ml) (1.16.0)
+Requirement already satisfied: urllib3>=1.21.1 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (1.26.15)
+Requirement already satisfied: websocket-client<1.4.0,>=0.55.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (1.3.3)
+Requirement already satisfied: wrapt>=1.11.2 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (1.14.1)
+Requirement already satisfied: wurlitzer>=1.0.2 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (3.0.3)
+Requirement already satisfied: everett[ini]<3.2.0,>=1.0.1 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (3.1.0)
+Requirement already satisfied: dulwich!=0.20.33,>=0.20.6 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (0.21.5)
+Requirement already satisfied: rich>=13.3.2 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (13.4.2)
+Requirement already satisfied: configobj in /opt/conda/lib/python3.10/site-packages (from everett[ini]<3.2.0,>=1.0.1->comet_ml) (5.0.8)
+Requirement already satisfied: attrs>=17.4.0 in /opt/conda/lib/python3.10/site-packages (from jsonschema!=3.1.0,>=2.6.0->comet_ml) (23.1.0)
+Requirement already satisfied: pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,>=0.14.0 in /opt/conda/lib/python3.10/site-packages (from jsonschema!=3.1.0,>=2.6.0->comet_ml) (0.19.3)
+Requirement already satisfied: charset-normalizer<4,>=2 in /opt/conda/lib/python3.10/site-packages (from requests>=2.18.4->comet_ml) (3.1.0)
+Requirement already satisfied: idna<4,>=2.5 in /opt/conda/lib/python3.10/site-packages (from requests>=2.18.4->comet_ml) (3.4)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.10/site-packages (from requests>=2.18.4->comet_ml) (2023.5.7)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /opt/conda/lib/python3.10/site-packages (from rich>=13.3.2->comet_ml) (2.2.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /opt/conda/lib/python3.10/site-packages (from rich>=13.3.2->comet_ml) (2.15.1)
+Requirement already satisfied: mdurl~=0.1 in /opt/conda/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=13.3.2->comet_ml) (0.1.2)
+[ ]
+#from comet_ml import Experiment
+
+#experiment = Experiment(
+# api_key = "O2DQXkha3pCGKtPdWVSve0aKf",
+  #project_name = "unsupervised-learning",
+  #workspace="orifuna-oreo"
+#)
+COMET INFO: ---------------------------------------------------------------------------------------
+COMET INFO: Comet.ml Experiment Summary
+COMET INFO: ---------------------------------------------------------------------------------------
+COMET INFO:   Data:
+COMET INFO:     display_summary_level : 1
+COMET INFO:     url                   : https://www.comet.com/orifuna-oreo/unsupervised-learning/01afdaf9fc534a2080735eb5965e5e6e
+COMET INFO:   Parameters:
+COMET INFO:     norm         : l2
+COMET INFO:     smooth_idf   : True
+COMET INFO:     sublinear_tf : False
+COMET INFO:     use_idf      : True
+COMET INFO:   Uploads:
+COMET INFO:     conda-environment-definition : 1
+COMET INFO:     conda-info                   : 1
+COMET INFO:     conda-specification          : 1
+COMET INFO:     environment details          : 1
+COMET INFO:     filename                     : 1
+COMET INFO:     installed packages           : 1
+COMET INFO:     notebook                     : 1
+COMET INFO:     os packages                  : 1
+COMET INFO:     source_code                  : 1
+COMET INFO: 
+COMET WARNING: As you are running in a Jupyter environment, you will need to call `experiment.end()` when finished to ensure all metrics and code are logged before exiting.
+COMET INFO: Couldn't find a Git repository in '/kaggle/working' nor in any parent directory. Set `COMET_GIT_DIRECTORY` if your Git Repository is elsewhere.
+COMET INFO: Experiment is live on comet.com https://www.comet.com/orifuna-oreo/unsupervised-learning/f571e0df5a2140e197ae8add30bee0f8
+
+Introduction
+In the modern world heavily influenced by technology, recommender systems play a crucial role in enabling individuals to make better choices about the content they consume. This is particularly evident in movie recommendations, where advanced algorithms can assist viewers in discovering excellent films from a vast selection. Therefore, we will develop a recommendation algorithm that combines content-based and collaborative filtering techniques to accurately predict how a user might rate a movie they haven't seen before, based on their past preferences.
+
+Problem Statement
+In today's world, several prominent companies dominate various industries, including YouTube, Facebook, Twitter, Netflix, Amazon, LinkedIn, and Google. These giants share a common thread: the utilization of recommendation systems. In the era of Artificial Intelligence, nearly every sector, from government and education to the rapidly expanding entertainment industry, relies heavily on AI technology to enhance their effectiveness. Therefore, our objective as Smartbyte, is to develop a precise and resilient model that tackles this significant economic opportunity. By implementing our solution, users within our clients' system will enjoy personalized recommendations, fostering a strong connection with the streaming services that best cater to their viewing preferences. This, in turn, will enhance platform affinity among their audience.
+
+Supplied data
+genome_scores.csv - A score mapping the strength between movies and tag-related properties.
+genome_tags.csv - User assigned tags for genome-related scores.
+imdb_data.csv - Additional movie metadata scraped from IMDB using the links.csv file.
+links.csv - File providing a mapping between a MovieLens ID and associated IMDB and TMDB IDs.
+sample_submission.csv - Sample of the submission format for the predict.
+tags.csv - User assigned for the movies within the dataset.
+test.csv - The test split of the dataset. Contains user and movie IDs with no rating data.
+train.csv - The training split of the dataset. Contains user and movie IDs with associated rating data.
+Content
+1.Import packages
+
+2.Loading Datasets
+
+3.Data Description
+
+4.Exploratory Data Analysis(EDA)
+
+5.Modeling
+
+1. Importing packages
+[ ]
+# Install packages here
+
+# Packages for data processing
+import numpy as np
+import pandas as pd
+import datetime
+import random
+from sklearn import preprocessing
+from sklearn.datasets import make_blobs
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import re
+from scipy.sparse import csr_matrix
+import scipy as sp
+
+
+# Packages for visualization
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline
+sns.set(font_scale=1)
+sns.set_style("white")
+pd.set_option('display.max_columns', 37)
+import warnings
+warnings.filterwarnings('ignore')
+from IPython.display import display_html 
+from IPython.core.display import HTML
+from collections import defaultdict
+import datetime
+import re
+import squarify
+import os
+
+
+# Packages for model evaluation
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
+from time import time
+
+# Package to suppress warnings
+import warnings
+warnings.filterwarnings("ignore")
+
+# Packages for saving models
+import pickle
+
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+
+# Install packages here
+# Packages for data processing
+import numpy as np
+import pandas as pd
+import datetime
+from sklearn import preprocessing
+from sklearn.datasets import make_blobs
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import re
+from scipy.sparse import csr_matrix
+import scipy as sp
+
+
+# Packages for modeling
+from surprise import Reader
+from surprise import Dataset
+from surprise import accuracy
+from surprise import KNNWithMeans, KNNWithZScore
+from surprise import KNNBasic, KNNBaseline
+from surprise.model_selection import cross_validate, train_test_split
+from surprise.model_selection import GridSearchCV
+from surprise import SVD
+from surprise import SVDpp
+from surprise import NMF
+from surprise import SlopeOne
+from surprise import CoClustering
+from surprise import NormalPredictor
+from surprise import BaselineOnly
+import heapq
+2. Loading Datasets
+[ ]
+sample_submission = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/sample_submission.csv')
+movies = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/movies.csv')
+imdb_data = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/imdb_data.csv')
+genome_scores = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/genome_scores.csv')
+genome_tags = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/genome_tags.csv')
+train = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/train.csv')
+test = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/test.csv')
+tags = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/tags.csv')
+links = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/links.csv')
+3. Data Description
+[ ]
+sample_submission.info()
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 5000019 entries, 0 to 5000018
+Data columns (total 2 columns):
+ #   Column  Dtype  
+---  ------  -----  
+ 0   Id      object 
+ 1   rating  float64
+dtypes: float64(1), object(1)
+memory usage: 76.3+ MB
+[ ]
+movies.info()
+movies
+
+[ ]
+imdb_data.info()
+imdb_data
+
+[ ]
+train.info()
+train
+
+[ ]
+test.info()
+test
+
+[ ]
+genome_tags.info()
+genome_tags
+
+[ ]
+tags.info()
+tags
+
+4. Data Preprocessing
+Checking and removing null values from the datasets that we are planning to use
+[ ]
+print("No of Null values in our train df : ", sum(train.isnull().any()))
+No of Null values in our train df :  0
+[ ]
+print("No of Null values in our test df : ", sum(test.isnull().any()))
+No of Null values in our test df :  0
+[ ]
+print("No of Null values in our movies df : ", sum(movies.isnull().any()))
+No of Null values in our movies df :  0
+[ ]
+print("No of Null values in our imdb_data df : ", sum(imdb_data.isnull().any()))
+No of Null values in our imdb_data df :  5
+[ ]
+print("No of Null values in our genome tags df : ", sum(genome_tags.isnull().any()))
+No of Null values in our genome tags df :  0
+Checking and removing duplicate values
+[ ]
+#Ascertain how many users and movies there are and whether there are any duplicates(within the train dataset)
+users = len(train.userId.unique())
+items = len(train.movieId.unique())
+print('There are {} unique users and {}\
+ unique movies train dataset with {} duplicated entries'.format(users, items, train[train.duplicated()].count().sum()))
+There are 162541 unique users and 48213 unique movies train dataset with 0 duplicated entries
+[ ]
+#Remove duplicate entries for userId, movieId in the test dataset 
+duplicate_bool = test.duplicated(['userId','movieId'])
+duplicates = sum(duplicate_bool)
+print("There are {} duplicate rating entries in the data..".format(duplicates))
+There are 0 duplicate rating entries in the data..
+[ ]
+#Remove duplicate entries for movieId, title, genres in the movies dataset 
+duplicate_bool = movies.duplicated(['movieId', 'title', 'genres'])
+duplicates = sum(duplicate_bool)
+print("There are {} duplicate rating entries in the data..".format(duplicates))
+There are 0 duplicate rating entries in the data..
+[ ]
+#Calculating the percentage of missing values in each column of the imdb dataset
+total = imdb_data.isnull().sum().sort_values(ascending=False)
+percent_1 = imdb_data.isnull().sum()/imdb_data.isnull().count()*100
+percent_2 = (round(percent_1, 1)).sort_values(ascending=False)
+missing_data = pd.concat([total, percent_2],
+                         axis=1, keys=['Total', '(%) missing'])
+missing_data['(%) missing'].plot(kind='bar')
+plt.xlabel('(%) Missing Values')
+plt.ylabel('Columns with Missing Values')
+plt.title('Percentage of Missing Values per Column')
+plt.show()
+
+Observations: It is easily visible from the above chart that there is a large proportion of missing entries across all variables this makes it unfitting for modelling purposes.
+
+[ ]
+# Extract release date (year) from movie titles
+
+# Use regular expression to extract year from paranthesis in movie title 
+movies["year"] = movies.title.str.extract("\((\d{4})\)", expand=True)
+# Remove parentheses so only year is extracted
+movies["year"] = movies.year.str.extract("(\d\d\d\d)", expand=True)
+# Remove year from the title column
+movies["title"] = movies.title.str.replace("(\(\d\d\d\d\))", "")
+# Strip any ending whitespace characters
+movies["title"] = movies["title"].apply(lambda x: x.strip())
+[ ]
+movies.head()
+
+[ ]
+# Merge train (users) and movies datasets on movieId column
+train_movies_df = pd.merge(train,
+                           movies,
+                           how='left',
+                           on='movieId')
+
+# Perform a further merge with imdb_data on movieId column
+movies_metadata_df = pd.merge(train_movies_df,
+                              imdb_data,
+                              how='left',
+                              on='movieId')
+
+movies_metadata_df.head(3)
+
+[ ]
+imdb_data['title_cast']=imdb_data['title_cast'].str.split('|') #spliting the title cast into a list
+imdb_data['plot_keywords']=imdb_data['plot_keywords'].str.split('|') #spliting the Key words into a list
+imdb_data.head()
+
+[ ]
+#remove all commas
+imdb_data['budget'] = imdb_data['budget'].str.replace(',', '')
+#remove all currency signs 
+imdb_data['budget'] = imdb_data['budget'].str.extract('(\d+)', expand=False)
+#converting feature into a float
+imdb_data['budget'] = imdb_data['budget'].astype(float)
+#removing NaN values and replacing with 0
+imdb_data['budget'] = imdb_data['budget'].replace(np.nan,0)
+#converting feature into an integer
+imdb_data['budget'] = imdb_data['budget'].astype(int)
+[ ]
+imdb_data = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/imdb_data.csv')
+[ ]
+imdb_data['title_cast']=imdb_data['title_cast'].str.split('|') #spliting the title cast into a list
+imdb_data['plot_keywords']=imdb_data['plot_keywords'].str.split('|') #spliting the Key words into a list
+imdb_data.head()
+
+[ ]
+#For uniformity and better utilisation on the app.
+## We convert director names into smaller letters and drop nan  values.
+imdb_data['director'] = imdb_data['director'].apply(lambda x: x.lower() if x == x else np.nan)
+[ ]
+imdb_data['plot_keywords'] = imdb_data['plot_keywords'].dropna()
+[ ]
+# This join makes sure imdb is added to movies and all movie rows are kept
+movies_imdb = movies.join(imdb_data.set_index('movieId'),on='movieId')
+movies_imdb.head()
+
+5. Exploratory Data Analysis
+Plot keywords word clouds
+[ ]
+plot_cloud = imdb_data.loc[:,'plot_keywords'] = imdb_data.loc[:, 'plot_keywords'].astype(str)
+plot_cloud.dropna()
+plot_cloud = [x for x in plot_cloud if str(x) != 'nan']
+title_corpus = ' '.join(movies['title'])
+plot_corpus = ' '.join(plot_cloud)
+[ ]
+# Generate wordcloud for the plot keywords of movies
+plot_wordcloud = WordCloud(stopwords=STOPWORDS, background_color='black', height=2000, width=4000).generate(plot_corpus)
+plt.figure(figsize=(16,8))
+plt.imshow(plot_wordcloud)
+plt.axis('off')
+plt.show()
+
+Observation:
+
+We observe that there is an emphasis on words such as 'nudity'and 'love '. Emphasis on the location 'New York'.
+
+Genres
+[ ]
+movies_gg = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/movies.csv')
+[ ]
+# Create dataframe containing only the movieId and genres
+movies_genres = pd.DataFrame(movies_gg[['movieId', 'genres']],
+                             columns=['movieId', 'genres'])
+
+# Split genres seperated by "|" and create a list containing the genres allocated to each movie
+movies_genres.genres = movies_genres.genres.apply(lambda x: x.split('|'))
+
+# Create expanded dataframe where each movie-genre combination is in a seperate row
+movies_genres = pd.DataFrame([(tup.movieId, d) for tup in movies_genres.itertuples() for d in tup.genres],
+                             columns=['movieId', 'genres'])
+
+movies_genres.head()
+
+[ ]
+# Plot the genres from most common to least common
+plot = plt.figure(figsize=(15, 10))
+plt.title('Most common genres\n', fontsize=15)
+sns.countplot(y="genres", data=movies_genres,
+              order=movies_genres['genres'].value_counts(ascending=False).index,
+              palette="nipy_spectral_r")
+plt.show()
+
+Observation:
+
+Drama is the most popular genre with almost half the movies identifying as a drama film. The second one Comedy followed by Thriller, Romance, Action, Horror, Documentary, Crime, Adventure, Science Fiction, Children, Animation, Mystery and Fantasy. IMAX is the least common genre as it is the most expensive so fewer people watch it, it is also only available at the cinema and not streaming platforms such as Netflix.
+
+Ratings
+[ ]
+print (f'Average rating in the dataset: {np.mean(train["rating"])}')
+
+#bar graph plot to show the ratings of movies given by users
+cnt_srs = train['rating'].value_counts()
+
+plt.figure(figsize=(6,7))
+sns.barplot(x = cnt_srs.index, y = cnt_srs.values, alpha=0.8,palette='GnBu_d')
+plt.title('Movie Ratings of Users', fontsize=15)
+plt.ylabel('Number of Users', fontsize=15)
+plt.xlabel('Ratings', fontsize=30)
+plt.xticks([0,1,2,3,4,5,6,7,8,9],['0.5','1.0','1.5','2.0','2.5','3.0','3.5','4.0','4.5','5.0'])
+plt.show()
+
+Observation:
+
+The average rating of around 3.5 indicates that users generally have a positive inclination towards their ratings and are not overly critical in their feedback. Ratings below 2.0 are relatively uncommon. Another plausible explanation could be that users only rate movies they enjoy, leading to fewer ratings for unenjoyable ones. Personally, I've left a movie theater just 15 minutes into a bad film, considering it a waste of time and accepting the movie ticket cost as unrecoverable. The most common rating in the chart is 4.0, suggesting that users often provide whole-number ratings (e.g., 4.0) rather than fractional ratings (e.g., 3.5).
+
+[ ]
+# Calculate average rating for each movie and arrange from highest to lowest
+movies_ranking = movies_metadata_df[['title','rating']].groupby('title').mean().sort_values('rating', ascending=False)
+[ ]
+movies_ranking['No_of_ratings'] = movies_metadata_df.groupby('title')['rating'].count()
+[ ]
+a = movies_ranking.sort_values(by=['No_of_ratings', 'rating'], ascending=False).head()
+[ ]
+# Average rating of movies in the dataset
+avg_rating = train.groupby('movieId')['rating'].mean()
+
+# Plotting the results
+plt.figure(figsize=(10,8))
+avg_rating.plot(kind='hist')
+plt.ylabel('Frequency')
+plt.xlabel('Movie Rating')
+plt.title('Average ratings of movies with 100 or more viewers')
+plt.show()
+
+Observation:
+
+Most of the movies are not common and were watched by a few number of people, so even if two people rated the movie 5 stars it wouldn't be enough to classify a movie as a 5 star rated movie so 100 is a fair number.
+
+Most people rated the movie between 3 and 4 because they probably felt that a rating of 5 would be overrating the movie.
+
+[ ]
+# Set plot size
+sns.set(rc={'figure.figsize':(10,8)})
+
+# Plot Number of rating for every rating category.
+sns.scatterplot(x='rating', y='No_of_ratings', data=movies_ranking, color='orange')
+plt.title('Number of ratings per average rating per movie')
+plt.xlabel('Rating')
+plt.ylabel('Number of ratings')
+plt.show()
+
+Observation:
+
+The above plot shows that movies that receive a higher number of ratings also tend to receive higher rating scores, lending further credence to the belief that popular movies (high number of views) are more highly rated. In the plot below, it can be seen that movies with more than 100 ratings obtain a rating of 3.5 as their mode.
+
+The ratings do not start from zero because the minimum rating one can give is 0.5 or 1 star.
+
+The table below shows the correlation between ratings count and rating (score) for each movie director. Those directors whose movies have received the most number of ratings typically also get higher rating scores for their movies.
+
+[ ]
+best_director = pd.DataFrame(movies_metadata_df.groupby('director')['rating'].mean().
+                             sort_values(ascending=False))
+best_director['No_of_ratings'] = movies_metadata_df.groupby('director')['rating'].count()
+best_director.sort_values(by=['No_of_ratings', 'rating'], ascending=False).head(10)
+
+[ ]
+#A visual indication of the correlation between number of ratings and rating scores for directors.
+
+# Set plot size
+sns.set(rc={'figure.figsize':(10,8)})
+
+sns.scatterplot(x = 'rating', y = 'No_of_ratings', data = best_director, color='pink').set_title('Count of average rating per director', color='red')
+plt.xlabel('Ratings')
+plt.ylabel('Number of Ratings')
+plt.show()
+
+Observation:
+
+A majority of people who gave ratings gave a rating of above 2.5. Most people rate a movie based on the director and not the content therefore we would assume that they felt a rating of between 3 and 4 is more appropriate.
+
+[ ]
+# return number of rows by the year 
+year_counts = movies[["title", "year"]].groupby("year").size()
+
+fig, ax = plt.subplots(figsize=(20, 10))
+ax.plot(year_counts.index, year_counts.values)
+ax.xaxis.set_major_locator(plt.MaxNLocator(15)) # changes the number of xticks we see
+plt.title("Number of movies per year", fontsize=16)
+plt.xlabel("Year", fontsize= 14)
+plt.ylabel("Number of Movies Released", fontsize=14)
+plt.show()
+
+Observations:
+
+We see that as the years go by, the total number of movies released per year increased. This might be from the fact that as the technology advances, the more movies are released and also more money is generated through the movie industries so everyone will want to release their movies
+
+[ ]
+# Create 'year' df that averages release year for each user
+years = pd.merge(train, movies, on='movieId')[['userId','year']].dropna()
+years['year'] = years['year'].astype('int64')
+years.groupby('userId').mean()
+
+# Set plot size
+sns.set(rc={'figure.figsize':(20,10)})
+
+plt.figure(figsize=(12,10))
+years['year'].plot(kind='hist', color = 'orange')
+plt.ylabel('Frequency')
+plt.xlabel('Average release year per user')
+plt.title('Distribution of release years for movies rated by users')
+plt.show()
+
+The above graph shows an increasing trend in movie releases since 1995.The years 2015 and 2016 are the years where the highest number of movies were released.What the diagram above communicates to us is that as the years progress, the amount of movies being released have significantly increased.
+
+An indication as to how rating counts vary by day of week
+
+[ ]
+# Convert the timestamp values into datetime format
+train['timestamp'] = pd.to_datetime(train['timestamp'], unit='ms')
+train.head()
+
+[ ]
+# Extract the day of the week from the newly-formatted timestamp column
+train['day_of_week'] = train['timestamp'].dt.dayofweek
+days = {0:'Mon',1:'Tue',2:'Wed',3:'Thur',4:'Fri',5:'Sat',6:'Sun'}
+train['day_of_week'] = train['day_of_week'].apply(lambda x: days[x])
+train.tail()
+
+[ ]
+# Plot number of ratings by day of week
+train['day_of_week'].value_counts().plot(kind='bar', color = 'green')
+plt.title('Ratings per day of the week')
+plt.xlabel('Day of the week')
+plt.ylabel('Proportion of ratings created/collected')
+plt.show()
+
+We calcated the average rating for each day of the week and we can see that we receive the most ratings on a Sunday and on a Saturday. As that would be the time that users are more settled at home, because it would be end of week and thats the time that most users would have time to watch movies.
+
+Top 10 Total Number of ratings per Movie
+[ ]
+# 10 Most Rated Movies
+data = train.groupby('movieId')['rating'].size().sort_values(ascending=False)
+da = {'count_rating': data.values, 'movieId': data.index}
+# Create DataFrame.
+df = pd. DataFrame(da)
+df = df[:10]
+df = pd.merge(df,movies)
+
+# Plot the 10 Most Rated Movies
+plot = plt.figure(figsize=(15, 10))
+plt.title('10 Most Rated Movies\n', fontsize=20)
+sns.barplot(y="title", data=df,
+              x = 'count_rating',
+              palette="nipy_spectral_r")
+plt.show()
+
+Observation: The most rated movie 'The Shawshank redemption' is a movie about Andy Dufresne (Tim Robbins) who is sentenced to two consecutive life terms in prison for the murders of his wife and her lover and is sentenced to a tough prison. However, only Andy knows he didn't commit the crimes. While there, he forms a friendship with Red (Morgan Freeman), experiences brutality of prison life, adapts, helps the warden, etc., all in 19 years. It truly is a timeless movie .I've watched it and i really enjoyed and I'm definitely giving it a 5.
+
+10 Least Rated Movies
+[ ]
+# 10 Least Rated Movies
+data = train.groupby('movieId')['rating'].size().sort_values(ascending=False)
+da = {'count_rating': data.values, 'movieId': data.index}
+# Create DataFrame.
+df = pd. DataFrame(da)
+df = df[-10:]
+df = pd.merge(df,movies)
+
+# Plot the 10 Least Rated Movies
+plot = plt.figure(figsize=(15, 10))
+plt.title('Least 10 total ratings per Movie\n', fontsize=20)
+sns.barplot(y="title", data=df,
+              x = 'count_rating',
+              palette="nipy_spectral_r")
+plt.show()
+
+Observation: The movies with the lowest ratings are movies that mostly portray strange situations, surprises, surrealism, plot twists, black humor. We would assume that a large number of people are not comfortable with those type of movies.
+
+[ ]
+#Create variable "budget_per_genre"
+budget_per_genre=movies_imdb[['genres','budget']].explode('genres')
+budget_per_genre['budget']=budget_per_genre['budget'].str.replace(',', "").str.extract('(\d+)', expand=False).astype('float')
+[ ]
+budget_per_genre
+
+[ ]
+budget_per_genre.genres = budget_per_genre.genres.apply(lambda x: x.split('|'))
+
+
+budget_per_genre = pd.DataFrame([(tup.budget, d) for tup in budget_per_genre.itertuples() for d in tup.genres],
+                             columns=['budget', 'genres'])
+
+budget_per_genre.dropna()
+
+[ ]
+#Plotting an average budget per genre using a line-plot
+plt.figure(figsize=(10,6))
+axes=sns.lineplot(x="genres", y="budget", data=budget_per_genre)
+axes.set_title('Average Budget Per Genre',fontsize=15)
+plt.xticks(rotation=90)
+plt.show()
+
+Observation: Movies displayed on IMAX require the largest budget as IMAX are promoted as premium viewing options, thus have prices as high relative to regular-format movies as the market will bear. The extra costs of running an IMAX screening and the willingness of customers willing to pay the extra money for the IMAX experience.
+
+The War genre clearly requires the biggest budget, and documentaries are the least expensive.
+
+[ ]
+import plotly.express as px  #imporing visualization library plotly
+genre_count=movies_metadata_df['director'].value_counts()
+genre_count = genre_count.dropna()
+genre_count = genre_count[:10]
+genre_count=pd.DataFrame(genre_count).reset_index()
+popular_genre=genre_count.rename(columns={'index':'Directors','director':'Count of ratings'})
+fig = px.bar(popular_genre, y='Count of ratings', x='Directors', text='Directors')
+fig.update_layout(title_text='<b>Common Directors<b>',title_x=0.5)
+fig.show()
+
+Observation: Quentin Tarantino, in full Quentin Jerome Tarantino is an american director and screenwriter whose films are noted for their stylized violence, razor-sharp dialogue, and fascination with film and pop culture.and he believes that crime can make a movie pop.Tarantino's films often feature graphic violence, a tendency which has sometimes been criticized.
+
+Runtime
+[ ]
+#Plotting distribution of movies's duration using dist-plot
+plt.figure(figsize = (10,6))
+axes=sns.distplot(imdb_data['runtime'],color='green')
+axes.set_title('Runtime Distribution',fontsize=15)
+plt.show()
+
+Observation: The most common duration of a movie is around 90 minutes.
+
+[ ]
+movies = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/movies.csv')
+imdb_data = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/imdb_data.csv')
+[ ]
+movies_imdb= pd.merge(imdb_data,movies,on ='movieId',how ='inner')
+[ ]
+#Create variable "runtime_genre"
+runtime_per_genre=movies_imdb[['genres','runtime']].explode('genres')
+[ ]
+runtime_per_genre.genres = runtime_per_genre.genres.apply(lambda x: x.split('|'))
+
+
+runtime_per_genre = pd.DataFrame([(tup.runtime, d) for tup in runtime_per_genre.itertuples() for d in tup.genres],
+                             columns=['runtime', 'genres'])
+
+runtime_per_genre.dropna()
+
+[ ]
+#Plotting an average runtime per genre using line-plot
+plt.figure(figsize=(10,6))
+axes=sns.lineplot(x="genres", y="runtime", data=runtime_per_genre)
+axes.set_title('Average Runtime Per Genre',fontsize=15)
+plt.xticks(rotation=90)
+plt.show()
+
+Observation: It can be observed that Western movies have the highest runtime whilst animation movies have the least runtime. We see that animation has the least runtime which is caused by the cost and the time involved, also because most animated films are aimed at children and children have a short attention span.
+
+[ ]
+#Plotting top 10 movie directors using a count-plot
+plt.figure(figsize = (10,6))
+director=imdb_data['director']#.explode()
+axes=sns.countplot(y=director, order = director.value_counts().index[1:11],color='black')
+axes.set_title('Top 10 Most Popular Movie Directors',fontsize=15)
+plt.xticks(rotation=90)
+plt.show()
+
+Observation: A number of popular directors based on the number of movies they have directed. We can observe that the most popular movie director is Luc Besson,because he has directed the most movies.
+
+[ ]
+imdb_data = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/imdb_data.csv')
+[ ]
+imdb_data['title_cast']=imdb_data['title_cast'].fillna("Unknown")
+imdb_data['plot_keywords']=imdb_data['plot_keywords'].fillna("Unknown")
+
+# Create dataframe containing only the movieId and title cast
+title_cast = pd.DataFrame(imdb_data[['movieId', 'title_cast']],
+                             columns=['movieId', 'title_cast'])
+# Create dataframe containing only the movieId and keywords
+plot_keywords = pd.DataFrame(imdb_data[['movieId', 'plot_keywords']],
+                             columns=['movieId', 'plot_keywords'])
+
+# Split genres seperated by "|" and create a list containing the genres allocated to each movie
+title_cast.title_cast = title_cast.title_cast.apply(lambda x: x.split('|'))
+plot_keywords.plot_keywords = plot_keywords.plot_keywords.apply(lambda x: x.split('|'))
+
+# Create expanded dataframe where each movie-genre combination is in a seperate row
+title_cast = pd.DataFrame([(tup.movieId, d) for tup in title_cast.itertuples() for d in tup.title_cast],
+                             columns=['movieId', 'title_cast'])
+plot_keywords = pd.DataFrame([(tup.movieId, d) for tup in plot_keywords.itertuples() for d in tup.plot_keywords],
+                             columns=['movieId', 'plot_keywords'])
+
+
+title_cast.head()
+
+[ ]
+title_cast=title_cast[title_cast!= "Unknown"]
+title_cast
+
+[ ]
+#Plotting popular cast using a count-plot
+plt.figure(figsize = (10,6))
+title_cast=title_cast.title_cast.explode()
+ax=sns.countplot(y=title_cast, order = title_cast.value_counts().index[:20],color='purple')
+ax.set_title('Top 20 Popular Actors',fontsize=15)
+plt.xticks(rotation=90)
+plt.show()
+
+Observation: Samuel L Jackson seems to be the most popular actor as he appeared in over 80 movies from our database.
+
+Modelling phase
+Here you can apply the models outline in the Intro to Recommender Notebook. You only need to apply one version be it Content based or Collabrative method
+
+Collabrative method
+Collaborative filtering (CF) is a technique used by recommender systems. Collaborative filtering has two senses, a narrow one and a more general one.
+
+In the newer, narrower sense, collaborative filtering is a method of making automatic predictions (filtering) about the interests of a user by collecting preferences or taste information from many users (collaborating). The underlying assumption of the collaborative filtering approach is that if a person A has the same opinion as a person B on an issue, A is more likely to have B's opinion on a different issue than that of a randomly chosen person. For example, a collaborative filtering recommendation system for preferences in television programming could make predictions about which television show a user should like given a partial list of that user's tastes (likes or dislikes). Note that these predictions are specific to the user, but use information gleaned from many users. This differs from the simpler approach of giving an average (non-specific) score for each item of interest, for example based on its number of votes.
+
+In the more general sense, collaborative filtering is the process of filtering for information or patterns using techniques involving collaboration among multiple agents, viewpoints, data sources, etc. Applications of collaborative filtering typically involve very large data sets. Collaborative filtering methods have been applied to many different kinds of data including: sensing and monitoring data, such as in mineral exploration, environmental sensing over large areas or multiple sensors; financial data, such as financial service institutions that integrate many financial sources; or in electronic commerce and web applications where the focus is on user data, etc. The remainder of this discussion focuses on collaborative filtering for user data, although some of the methods and approaches may apply to the other major applications as well.
+
+Advantages
+
+No domain knowledge necessary We don't need domain knowledge because the embeddings are automatically learned.
+
+Serendipity The model can help users discover new interests. In isolation, the ML system may not know the user is interested in a given item, but the model might still recommend it because similar users are interested in that item.
+
+Great starting point To some extent, the system needs only the feedback matrix to train a matrix factorization model. In particular, the system doesn't need contextual features. In practice, this can be used as one of multiple candidate generators.
+
+Disadvantages
+
+Cannot handle fresh items The prediction of the model for a given (user, item) pair is the dot product of the corresponding embeddings. So, if an item is not seen during training, the system can't create an embedding for it and can't query the model with this item. This issue is often called the cold-start problem. However, the following techniques can address the cold-start problem to some extent:
+
+Hard to include side features for query/item
+
+Side features* are any features beyond the query or item ID. For movie recommendations, the side features might include country or age. Including available side features improves the quality of the model. Although it may not be easy to include side features in WALS, a generalization of WALS makes this possible.
+
+[ ]
+# Apply your modelling here
+cols = ['userId', 'movieId','rating']
+reader = Reader(rating_scale=(0.5, 5.0))
+data = Dataset.load_from_df(train[cols],reader)
+trainset, testset = train_test_split(data, test_size=0.10, random_state=42)
+#cross_validate(svd, data, measures=['RMSE', 'MAE'], cv=2, verbose=True)
+[ ]
+nmf_model = NMF(n_epochs=20, n_factors=90, random_state=42,verbose=True)
+nmf_model.fit(trainset)
+nmf_predictions =nmf_model.test(testset)
+nmf_rmse = accuracy.rmse(nmf_predictions)
+Processing epoch 0
+Processing epoch 1
+Processing epoch 2
+Processing epoch 3
+Processing epoch 4
+Processing epoch 5
+Processing epoch 6
+Processing epoch 7
+Processing epoch 8
+Processing epoch 9
+Processing epoch 10
+Processing epoch 11
+Processing epoch 12
+Processing epoch 13
+Processing epoch 14
+Processing epoch 15
+Processing epoch 16
+Processing epoch 17
+Processing epoch 18
+Processing epoch 19
+RMSE: 1.7269
+[ ]
+svd_model = SVD(n_epochs=20,n_factors=400,init_std_dev=0.01,random_state=42,verbose=True)
+svd_model.fit(trainset)
+svd_predictions = svd_model.test(testset)
+svd_rmse = accuracy.rmse(svd_predictions)
+Processing epoch 0
+Processing epoch 1
+Processing epoch 2
+Processing epoch 3
+Processing epoch 4
+Processing epoch 5
+Processing epoch 6
+Processing epoch 7
+Processing epoch 8
+Processing epoch 9
+Processing epoch 10
+Processing epoch 11
+Processing epoch 12
+Processing epoch 13
+Processing epoch 14
+Processing epoch 15
+Processing epoch 16
+Processing epoch 17
+Processing epoch 18
+Processing epoch 19
+RMSE: 0.8102
+[ ]
+cc_model = CoClustering(n_epochs=20,random_state=42)
+cc_model.fit(trainset)
+cc_predictions = cc_model.test(testset)
+cc_rmse=accuracy.rmse(cc_predictions)
+RMSE: 0.8999
+Model performance
+
+[ ]
+rmse_scores =[nmf_rmse,cc_rmse,svd_rmse]
+trained_models =['NMF','CoClustering','SVD']
+model_performance = pd.DataFrame({'model':trained_models,'RMSE':rmse_scores})
+[ ]
+model_performance.sort_values(by='RMSE')
+
+[ ]
+fig, ax = plt.subplots(figsize=(14,7))
+sns.barplot(data=model_performance.sort_values(by='RMSE'), x='model', y='RMSE', palette="CMRmap", edgecolor="black", ax=ax)
+ax.set_xlabel("trained_models")
+ax.set_ylabel('rmse_Scores')
+ax.set_yticklabels(['{:,}'.format(int(x)) for x in ax.get_yticks().tolist()])
+for p in ax.patches:
+    ax.text(p.get_x() + p.get_width()/2, p.get_y() + p.get_height(), round(p.get_height(),3), fontsize=12, ha="center", va='bottom')
+plt.title('Model Accuracy By RMSE Score', fontsize=14)
+plt.show()
+
+[ ]
+# Hypertuning Singular Value Decomposition
+trainset, testset = train_test_split(data, test_size=0.01, random_state=42)
+# Modelling
+svd_algo_hyper = SVD(lr_all=0.0085,
+                     reg_all=0.01,
+                     n_epochs=20,
+                     init_std_dev=0.001,
+                     random_state= 450)
+svd_algo_hyper.fit(trainset)
+# Predicting
+svd_hyper_predictions = svd_algo_hyper.test(testset)
+# Convert the predictions to dataframe
+accuracy.rmse(svd_hyper_predictions)
+RMSE: 0.7898
+0.7897912021959559
+Content-based Filtering
+Content-based filtering uses item features to recommend other items similar to what the user likes, based on their previous actions or explicit feedback.
+
+To demonstrate content-based filtering, let’s hand-engineer some features for the Google Play store. The following figure shows a feature matrix where each row represents an app and each column represents a feature. Features could include categories (such as Education, Casual, Health), the publisher of the app, and many others. To simplify, assume this feature matrix is binary: a non-zero value means the app has that feature.
+
+You also represent the user in the same feature space. Some of the user-related features could be explicitly provided by the user. For example, a user selects "Entertainment apps" in their profile. Other features can be implicit, based on the apps they have previously installed. For example, the user installed another app published by Science R Us.
+
+The model should recommend items relevant to this user. To do so, you must first pick a similarity metric (for example, dot product). Then, you must set up the system to score each candidate item according to this similarity metric. Note that the recommendations are specific to this user, as the model did not use any information about other users.
+
+Advantages : The model doesn't need any data about other users, since the recommendations are specific to this user. This makes it easier to scale to a large number of users. The model can capture the specific interests of a user, and can recommend niche items that very few other users are interested in.
+
+Disadvantages : Since the feature representation of the items are hand-engineered to some extent, this technique requires a lot of domain knowledge. Therefore, the model can only be as good as the hand-engineered features. The model can only make recommendations based on existing interests of the user. In other words, the model has limited ability to expand on the users' existing interests.
+
+How it works
+[ ]
+movies_metadata_df = pd.merge(movies_metadata_df,tags)
+
+movies_metadata_df['directors_tags'] = (pd.Series(movies_metadata_df[['director', 'tag']]
+                      .fillna('')
+                      .values.tolist()).str.join(' '))
+
+# Convienient indexes to map between book titles and indexes of 
+# the books dataframe
+titles = movies_metadata_df['title']
+indices = pd.Series(movies_metadata_df.index, index=movies_metadata_df['title'])
+display(indices.head(20))
+
+[ ]
+tf = TfidfVectorizer(analyzer='word', ngram_range=(1,2),
+                     min_df=0, stop_words='english')
+
+# Produce a feature matrix, where each row corresponds to a book,
+# with TF-IDF features as columns 
+tf_authTags_matrix = tf.fit_transform(movies_metadata_df['directors_tags'])
+[ ]
+cosine_sim_authTags = cosine_similarity(tf_authTags_matrix,
+                                        tf_authTags_matrix)
+print (cosine_sim_authTags.shape)
+(70, 70)
+[ ]
+def content_generate_top_N_recommendations(book_title, N=10):
+    # Convert the string book title to a numeric index for our 
+    # similarity matrix
+    b_idx = indices[book_title]
+    # Extract all similarity values computed with the reference book title
+    sim_scores = list(enumerate(cosine_sim_authTags[b_idx]))
+    # Sort the values, keeping a copy of the original index of each value
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    # Select the top-N values for recommendation
+    sim_scores = sim_scores[1:N]
+    # Collect indexes 
+    book_indices = [i[0] for i in sim_scores]
+    # Convert the indexes back into titles 
+    return titles.iloc[book_indices]
+[ ]
+content_generate_top_N_recommendations('The DUFF', N=10)
+0                        Aloha
+1             Dead Man Walking
+2                 Lost Highway
+3                      Shrooms
+4       No Country for Old Men
+5       No Country for Old Men
+6         Arsenic and Old Lace
+7                 Ender's Game
+8    What We Do in the Shadows
+Name: title, dtype: object
+[ ]
+#params = {'n_epochs':20, #[30,40,50],
+#          'n_factors':400, #[100,200,300],
+  #         'init_std_dev':0.005, #[0.005,0.05,0.1],
+   #        'random_state':[42]} 
+#metrics = {"RMSE": [rmse_scores]}
+
+#experiment.log_parameters(params)
+#experiment.log_metrics(metrics)
+#experiment.end()
+COMET WARNING: Cannot safely convert [[1.7269005190071283, 0.8999280370213076, 0.8102209133775269]] object to a scalar value, using its string representation for logging. Resulting string might be invalid
+COMET INFO: ---------------------------------------------------------------------------------------
+COMET INFO: Comet.ml Experiment Summary
+COMET INFO: ---------------------------------------------------------------------------------------
+COMET INFO:   Data:
+COMET INFO:     display_summary_level : 1
+COMET INFO:     url                   : https://www.comet.com/orifuna-oreo/unsupervised-learning/f571e0df5a2140e197ae8add30bee0f8
+COMET INFO:   Metrics:
+COMET INFO:     RMSE : [[1.7269005190071283, 0.8999280370213076, 0.8102209133775269]]
+COMET INFO:   Parameters:
+COMET INFO:     init_std_dev : 0.005
+COMET INFO:     n_epochs     : 20
+COMET INFO:     n_factors    : 400
+COMET INFO:     norm         : l2
+COMET INFO:     random_state : [42]
+COMET INFO:     smooth_idf   : True
+COMET INFO:     sublinear_tf : False
+COMET INFO:     use_idf      : True
+COMET INFO:   Uploads:
+COMET INFO:     conda-environment-definition : 1
+COMET INFO:     conda-info                   : 1
+COMET INFO:     conda-specification          : 1
+COMET INFO:     environment details          : 1
+COMET INFO:     filename                     : 1
+COMET INFO:     installed packages           : 1
+COMET INFO:     notebook                     : 1
+COMET INFO:     os packages                  : 1
+COMET INFO:     source_code                  : 1
+COMET INFO: 
+COMET INFO: Please wait for metadata to finish uploading (timeout is 3600 seconds)
+Conclusion
+Throughout this notebook we have taken a comprehensive look at the data in order to gain insights and assist us in predicting ratings as well as building recommendation systems.
+
+For Both the collaborative and content-based filtering we implemented a few models to find a model that gives us the best rmse score which is a representation of your model performance. The model with the best rmse score was the singular value decomposition(SVD). The SVD performed better since it is very good at noise detection and does this by reducing the dimensions of a matrix in order to make certain subsequent matrix calculations simpler. By implementing SVD, which returned a very good RMSE score of 0.81 we can conclude that the algorithm implemented for our app is very good at movie recommendations.
+
+Generate your outputs here
+Prepare Submission File We make submissions in CSV files. Your submissions usually have two columns: an ID column and a prediction column. The ID field comes from the test data (keeping whatever name the ID field had in that data, which for the data is the string 'Id'). The prediction column will use the name of the target field.
+
+We will create a DataFrame with this data, and then use the dataframe's to_csv method to write our submission file. Explicitly include the argument index=False to prevent pandas from adding another column in our csv file.
+
+[ ]
+pred_svd_hyper = [svd_algo_hyper.predict(row.userId,row.movieId) for idx,row in test.iterrows()]
+# Converting the predictions to a dataframe
+test_pred_svd_hyper = pd.DataFrame(pred_svd_hyper)
+[ ]
+# Rename the fields in the prediction dataframe
+test_pred_svd_hyper.drop(['r_ui', 'details'], axis=1, inplace=True)
+test_pred_svd_hyper =test_pred_svd_hyper.rename(columns={'uid':'userId',
+                                                          'iid':'movieId',
+                                                          'est':'rating'})
+test_pred_svd_hyper.head()
+
+[ ]
+# Concatenate each userId and movieId into a one column for submission
+test_pred_svd_hyper['Id'] = test_pred_svd_hyper['userId'].astype(str).str.zfill(1) + '_' + test_pred_svd_hyper['movieId'].astype(str).str.zfill(1)
+[ ]
+svd_predictions_hyper = test_pred_svd_hyper[['Id','rating']]
+svd_predictions_hyper.head()
+
+[ ]
+svd_predictions_hyper.to_csv('./svd_pre_hyper_submission.csv', index=False)
+[ ]
+with open('nmf_pkl', 'wb') as file:
+    pickle.dump(nmf_model, file)
+[ ]
+with open('cc_pkl', 'wb') as file:
+    pickle.dump(cc_model, file)
+[ ]
+with open('svd_pkl', 'wb') as file:
+    pickle.dump(svd_model, file)
+[ ]
+with open('hyper_pkl', 'wb') as file:
+    pickle.dump(svd_algo_hyper, file)
+[ ]
+with open('colab_pkl', 'wb') as file:
+    pickle.dump(tf_authTags_matrix, file)
+Colab paid products - Cancel contracts here
+Loading...
+final-notebook-team-jm2 (3).ipynb
+final-notebook-team-jm2 (3).ipynb_
+Movie Recommendation Challenge 2023
+Unsupervised Learning Solution
+SmartByte - team JM2 EDSA
+© Explore Data Science Academy
+
+
+
+[ ]
+# This Python 3 environment comes with many helpful analytics libraries installed
+# It is defined by the kaggle/python Docker image: https://github.com/kaggle/docker-python
+# For example, here's several helpful packages to load
+
+import numpy as np # linear algebra
+import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+
+# Input data files are available in the read-only "../input/" directory
+# For example, running this (by clicking run or pressing Shift+Enter) will list all files under the input directory
+
+import os
+for dirname, _, filenames in os.walk('/kaggle/input'):
+    for filename in filenames:
+        print(os.path.join(dirname, filename))
+
+# You can write up to 20GB to the current directory (/kaggle/working/) that gets preserved as output when you create a version using "Save & Run All" 
+# You can also write temporary files to /kaggle/temp/, but they won't be saved outside of the current session
+/kaggle/input/edsa-movie-recommendation-predict/sample_submission.csv
+/kaggle/input/edsa-movie-recommendation-predict/movies.csv
+/kaggle/input/edsa-movie-recommendation-predict/imdb_data.csv
+/kaggle/input/edsa-movie-recommendation-predict/genome_tags.csv
+/kaggle/input/edsa-movie-recommendation-predict/genome_scores.csv
+/kaggle/input/edsa-movie-recommendation-predict/train.csv
+/kaggle/input/edsa-movie-recommendation-predict/test.csv
+/kaggle/input/edsa-movie-recommendation-predict/tags.csv
+/kaggle/input/edsa-movie-recommendation-predict/links.csv
+Recommender System
+[ ]
+!pip install comet_ml
+Requirement already satisfied: comet_ml in /opt/conda/lib/python3.10/site-packages (3.33.6)
+Requirement already satisfied: jsonschema!=3.1.0,>=2.6.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (4.17.3)
+Requirement already satisfied: psutil>=5.6.3 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (5.9.3)
+Requirement already satisfied: python-box<7.0.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (6.1.0)
+Requirement already satisfied: requests-toolbelt>=0.8.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (0.10.1)
+Requirement already satisfied: requests>=2.18.4 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (2.31.0)
+Requirement already satisfied: semantic-version>=2.8.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (2.10.0)
+Requirement already satisfied: sentry-sdk>=1.1.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (1.27.1)
+Requirement already satisfied: simplejson in /opt/conda/lib/python3.10/site-packages (from comet_ml) (3.19.1)
+Requirement already satisfied: six in /opt/conda/lib/python3.10/site-packages (from comet_ml) (1.16.0)
+Requirement already satisfied: urllib3>=1.21.1 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (1.26.15)
+Requirement already satisfied: websocket-client<1.4.0,>=0.55.0 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (1.3.3)
+Requirement already satisfied: wrapt>=1.11.2 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (1.14.1)
+Requirement already satisfied: wurlitzer>=1.0.2 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (3.0.3)
+Requirement already satisfied: everett[ini]<3.2.0,>=1.0.1 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (3.1.0)
+Requirement already satisfied: dulwich!=0.20.33,>=0.20.6 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (0.21.5)
+Requirement already satisfied: rich>=13.3.2 in /opt/conda/lib/python3.10/site-packages (from comet_ml) (13.4.2)
+Requirement already satisfied: configobj in /opt/conda/lib/python3.10/site-packages (from everett[ini]<3.2.0,>=1.0.1->comet_ml) (5.0.8)
+Requirement already satisfied: attrs>=17.4.0 in /opt/conda/lib/python3.10/site-packages (from jsonschema!=3.1.0,>=2.6.0->comet_ml) (23.1.0)
+Requirement already satisfied: pyrsistent!=0.17.0,!=0.17.1,!=0.17.2,>=0.14.0 in /opt/conda/lib/python3.10/site-packages (from jsonschema!=3.1.0,>=2.6.0->comet_ml) (0.19.3)
+Requirement already satisfied: charset-normalizer<4,>=2 in /opt/conda/lib/python3.10/site-packages (from requests>=2.18.4->comet_ml) (3.1.0)
+Requirement already satisfied: idna<4,>=2.5 in /opt/conda/lib/python3.10/site-packages (from requests>=2.18.4->comet_ml) (3.4)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.10/site-packages (from requests>=2.18.4->comet_ml) (2023.5.7)
+Requirement already satisfied: markdown-it-py>=2.2.0 in /opt/conda/lib/python3.10/site-packages (from rich>=13.3.2->comet_ml) (2.2.0)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in /opt/conda/lib/python3.10/site-packages (from rich>=13.3.2->comet_ml) (2.15.1)
+Requirement already satisfied: mdurl~=0.1 in /opt/conda/lib/python3.10/site-packages (from markdown-it-py>=2.2.0->rich>=13.3.2->comet_ml) (0.1.2)
+[ ]
+#from comet_ml import Experiment
+
+#experiment = Experiment(
+# api_key = "O2DQXkha3pCGKtPdWVSve0aKf",
+  #project_name = "unsupervised-learning",
+  #workspace="orifuna-oreo"
+#)
+COMET INFO: ---------------------------------------------------------------------------------------
+COMET INFO: Comet.ml Experiment Summary
+COMET INFO: ---------------------------------------------------------------------------------------
+COMET INFO:   Data:
+COMET INFO:     display_summary_level : 1
+COMET INFO:     url                   : https://www.comet.com/orifuna-oreo/unsupervised-learning/01afdaf9fc534a2080735eb5965e5e6e
+COMET INFO:   Parameters:
+COMET INFO:     norm         : l2
+COMET INFO:     smooth_idf   : True
+COMET INFO:     sublinear_tf : False
+COMET INFO:     use_idf      : True
+COMET INFO:   Uploads:
+COMET INFO:     conda-environment-definition : 1
+COMET INFO:     conda-info                   : 1
+COMET INFO:     conda-specification          : 1
+COMET INFO:     environment details          : 1
+COMET INFO:     filename                     : 1
+COMET INFO:     installed packages           : 1
+COMET INFO:     notebook                     : 1
+COMET INFO:     os packages                  : 1
+COMET INFO:     source_code                  : 1
+COMET INFO: 
+COMET WARNING: As you are running in a Jupyter environment, you will need to call `experiment.end()` when finished to ensure all metrics and code are logged before exiting.
+COMET INFO: Couldn't find a Git repository in '/kaggle/working' nor in any parent directory. Set `COMET_GIT_DIRECTORY` if your Git Repository is elsewhere.
+COMET INFO: Experiment is live on comet.com https://www.comet.com/orifuna-oreo/unsupervised-learning/f571e0df5a2140e197ae8add30bee0f8
+
+Introduction
+In the modern world heavily influenced by technology, recommender systems play a crucial role in enabling individuals to make better choices about the content they consume. This is particularly evident in movie recommendations, where advanced algorithms can assist viewers in discovering excellent films from a vast selection. Therefore, we will develop a recommendation algorithm that combines content-based and collaborative filtering techniques to accurately predict how a user might rate a movie they haven't seen before, based on their past preferences.
+
+Problem Statement
+In today's world, several prominent companies dominate various industries, including YouTube, Facebook, Twitter, Netflix, Amazon, LinkedIn, and Google. These giants share a common thread: the utilization of recommendation systems. In the era of Artificial Intelligence, nearly every sector, from government and education to the rapidly expanding entertainment industry, relies heavily on AI technology to enhance their effectiveness. Therefore, our objective as Smartbyte, is to develop a precise and resilient model that tackles this significant economic opportunity. By implementing our solution, users within our clients' system will enjoy personalized recommendations, fostering a strong connection with the streaming services that best cater to their viewing preferences. This, in turn, will enhance platform affinity among their audience.
+
+Supplied data
+genome_scores.csv - A score mapping the strength between movies and tag-related properties.
+genome_tags.csv - User assigned tags for genome-related scores.
+imdb_data.csv - Additional movie metadata scraped from IMDB using the links.csv file.
+links.csv - File providing a mapping between a MovieLens ID and associated IMDB and TMDB IDs.
+sample_submission.csv - Sample of the submission format for the predict.
+tags.csv - User assigned for the movies within the dataset.
+test.csv - The test split of the dataset. Contains user and movie IDs with no rating data.
+train.csv - The training split of the dataset. Contains user and movie IDs with associated rating data.
+Content
+1.Import packages
+
+2.Loading Datasets
+
+3.Data Description
+
+4.Exploratory Data Analysis(EDA)
+
+5.Modeling
+
+1. Importing packages
+[ ]
+# Install packages here
+
+# Packages for data processing
+import numpy as np
+import pandas as pd
+import datetime
+import random
+from sklearn import preprocessing
+from sklearn.datasets import make_blobs
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import re
+from scipy.sparse import csr_matrix
+import scipy as sp
+
+
+# Packages for visualization
+import matplotlib.pyplot as plt
+import seaborn as sns
+%matplotlib inline
+sns.set(font_scale=1)
+sns.set_style("white")
+pd.set_option('display.max_columns', 37)
+import warnings
+warnings.filterwarnings('ignore')
+from IPython.display import display_html 
+from IPython.core.display import HTML
+from collections import defaultdict
+import datetime
+import re
+import squarify
+import os
+
+
+# Packages for model evaluation
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
+from time import time
+
+# Package to suppress warnings
+import warnings
+warnings.filterwarnings("ignore")
+
+# Packages for saving models
+import pickle
+
+from wordcloud import WordCloud, STOPWORDS, ImageColorGenerator
+
+# Install packages here
+# Packages for data processing
+import numpy as np
+import pandas as pd
+import datetime
+from sklearn import preprocessing
+from sklearn.datasets import make_blobs
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+import re
+from scipy.sparse import csr_matrix
+import scipy as sp
+
+
+# Packages for modeling
+from surprise import Reader
+from surprise import Dataset
+from surprise import accuracy
+from surprise import KNNWithMeans, KNNWithZScore
+from surprise import KNNBasic, KNNBaseline
+from surprise.model_selection import cross_validate, train_test_split
+from surprise.model_selection import GridSearchCV
+from surprise import SVD
+from surprise import SVDpp
+from surprise import NMF
+from surprise import SlopeOne
+from surprise import CoClustering
+from surprise import NormalPredictor
+from surprise import BaselineOnly
+import heapq
+2. Loading Datasets
+[ ]
+sample_submission = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/sample_submission.csv')
+movies = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/movies.csv')
+imdb_data = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/imdb_data.csv')
+genome_scores = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/genome_scores.csv')
+genome_tags = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/genome_tags.csv')
+train = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/train.csv')
+test = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/test.csv')
+tags = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/tags.csv')
+links = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/links.csv')
+3. Data Description
+[ ]
+sample_submission.info()
+<class 'pandas.core.frame.DataFrame'>
+RangeIndex: 5000019 entries, 0 to 5000018
+Data columns (total 2 columns):
+ #   Column  Dtype  
+---  ------  -----  
+ 0   Id      object 
+ 1   rating  float64
+dtypes: float64(1), object(1)
+memory usage: 76.3+ MB
+[ ]
+movies.info()
+movies
+
+[ ]
+imdb_data.info()
+imdb_data
+
+[ ]
+train.info()
+train
+
+[ ]
+test.info()
+test
+
+[ ]
+genome_tags.info()
+genome_tags
+
+[ ]
+tags.info()
+tags
+
+4. Data Preprocessing
+Checking and removing null values from the datasets that we are planning to use
+[ ]
+print("No of Null values in our train df : ", sum(train.isnull().any()))
+No of Null values in our train df :  0
+[ ]
+print("No of Null values in our test df : ", sum(test.isnull().any()))
+No of Null values in our test df :  0
+[ ]
+print("No of Null values in our movies df : ", sum(movies.isnull().any()))
+No of Null values in our movies df :  0
+[ ]
+print("No of Null values in our imdb_data df : ", sum(imdb_data.isnull().any()))
+No of Null values in our imdb_data df :  5
+[ ]
+print("No of Null values in our genome tags df : ", sum(genome_tags.isnull().any()))
+No of Null values in our genome tags df :  0
+Checking and removing duplicate values
+[ ]
+#Ascertain how many users and movies there are and whether there are any duplicates(within the train dataset)
+users = len(train.userId.unique())
+items = len(train.movieId.unique())
+print('There are {} unique users and {}\
+ unique movies train dataset with {} duplicated entries'.format(users, items, train[train.duplicated()].count().sum()))
+There are 162541 unique users and 48213 unique movies train dataset with 0 duplicated entries
+[ ]
+#Remove duplicate entries for userId, movieId in the test dataset 
+duplicate_bool = test.duplicated(['userId','movieId'])
+duplicates = sum(duplicate_bool)
+print("There are {} duplicate rating entries in the data..".format(duplicates))
+There are 0 duplicate rating entries in the data..
+[ ]
+#Remove duplicate entries for movieId, title, genres in the movies dataset 
+duplicate_bool = movies.duplicated(['movieId', 'title', 'genres'])
+duplicates = sum(duplicate_bool)
+print("There are {} duplicate rating entries in the data..".format(duplicates))
+There are 0 duplicate rating entries in the data..
+[ ]
+#Calculating the percentage of missing values in each column of the imdb dataset
+total = imdb_data.isnull().sum().sort_values(ascending=False)
+percent_1 = imdb_data.isnull().sum()/imdb_data.isnull().count()*100
+percent_2 = (round(percent_1, 1)).sort_values(ascending=False)
+missing_data = pd.concat([total, percent_2],
+                         axis=1, keys=['Total', '(%) missing'])
+missing_data['(%) missing'].plot(kind='bar')
+plt.xlabel('(%) Missing Values')
+plt.ylabel('Columns with Missing Values')
+plt.title('Percentage of Missing Values per Column')
+plt.show()
+
+Observations: It is easily visible from the above chart that there is a large proportion of missing entries across all variables this makes it unfitting for modelling purposes.
+
+[ ]
+# Extract release date (year) from movie titles
+
+# Use regular expression to extract year from paranthesis in movie title 
+movies["year"] = movies.title.str.extract("\((\d{4})\)", expand=True)
+# Remove parentheses so only year is extracted
+movies["year"] = movies.year.str.extract("(\d\d\d\d)", expand=True)
+# Remove year from the title column
+movies["title"] = movies.title.str.replace("(\(\d\d\d\d\))", "")
+# Strip any ending whitespace characters
+movies["title"] = movies["title"].apply(lambda x: x.strip())
+[ ]
+movies.head()
+
+[ ]
+# Merge train (users) and movies datasets on movieId column
+train_movies_df = pd.merge(train,
+                           movies,
+                           how='left',
+                           on='movieId')
+
+# Perform a further merge with imdb_data on movieId column
+movies_metadata_df = pd.merge(train_movies_df,
+                              imdb_data,
+                              how='left',
+                              on='movieId')
+
+movies_metadata_df.head(3)
+
+[ ]
+imdb_data['title_cast']=imdb_data['title_cast'].str.split('|') #spliting the title cast into a list
+imdb_data['plot_keywords']=imdb_data['plot_keywords'].str.split('|') #spliting the Key words into a list
+imdb_data.head()
+
+[ ]
+#remove all commas
+imdb_data['budget'] = imdb_data['budget'].str.replace(',', '')
+#remove all currency signs 
+imdb_data['budget'] = imdb_data['budget'].str.extract('(\d+)', expand=False)
+#converting feature into a float
+imdb_data['budget'] = imdb_data['budget'].astype(float)
+#removing NaN values and replacing with 0
+imdb_data['budget'] = imdb_data['budget'].replace(np.nan,0)
+#converting feature into an integer
+imdb_data['budget'] = imdb_data['budget'].astype(int)
+[ ]
+imdb_data = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/imdb_data.csv')
+[ ]
+imdb_data['title_cast']=imdb_data['title_cast'].str.split('|') #spliting the title cast into a list
+imdb_data['plot_keywords']=imdb_data['plot_keywords'].str.split('|') #spliting the Key words into a list
+imdb_data.head()
+
+[ ]
+#For uniformity and better utilisation on the app.
+## We convert director names into smaller letters and drop nan  values.
+imdb_data['director'] = imdb_data['director'].apply(lambda x: x.lower() if x == x else np.nan)
+[ ]
+imdb_data['plot_keywords'] = imdb_data['plot_keywords'].dropna()
+[ ]
+# This join makes sure imdb is added to movies and all movie rows are kept
+movies_imdb = movies.join(imdb_data.set_index('movieId'),on='movieId')
+movies_imdb.head()
+
+5. Exploratory Data Analysis
+Plot keywords word clouds
+[ ]
+plot_cloud = imdb_data.loc[:,'plot_keywords'] = imdb_data.loc[:, 'plot_keywords'].astype(str)
+plot_cloud.dropna()
+plot_cloud = [x for x in plot_cloud if str(x) != 'nan']
+title_corpus = ' '.join(movies['title'])
+plot_corpus = ' '.join(plot_cloud)
+[ ]
+# Generate wordcloud for the plot keywords of movies
+plot_wordcloud = WordCloud(stopwords=STOPWORDS, background_color='black', height=2000, width=4000).generate(plot_corpus)
+plt.figure(figsize=(16,8))
+plt.imshow(plot_wordcloud)
+plt.axis('off')
+plt.show()
+
+Observation:
+
+We observe that there is an emphasis on words such as 'nudity'and 'love '. Emphasis on the location 'New York'.
+
+Genres
+[ ]
+movies_gg = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/movies.csv')
+[ ]
+# Create dataframe containing only the movieId and genres
+movies_genres = pd.DataFrame(movies_gg[['movieId', 'genres']],
+                             columns=['movieId', 'genres'])
+
+# Split genres seperated by "|" and create a list containing the genres allocated to each movie
+movies_genres.genres = movies_genres.genres.apply(lambda x: x.split('|'))
+
+# Create expanded dataframe where each movie-genre combination is in a seperate row
+movies_genres = pd.DataFrame([(tup.movieId, d) for tup in movies_genres.itertuples() for d in tup.genres],
+                             columns=['movieId', 'genres'])
+
+movies_genres.head()
+
+[ ]
+# Plot the genres from most common to least common
+plot = plt.figure(figsize=(15, 10))
+plt.title('Most common genres\n', fontsize=15)
+sns.countplot(y="genres", data=movies_genres,
+              order=movies_genres['genres'].value_counts(ascending=False).index,
+              palette="nipy_spectral_r")
+plt.show()
+
+Observation:
+
+Drama is the most popular genre with almost half the movies identifying as a drama film. The second one Comedy followed by Thriller, Romance, Action, Horror, Documentary, Crime, Adventure, Science Fiction, Children, Animation, Mystery and Fantasy. IMAX is the least common genre as it is the most expensive so fewer people watch it, it is also only available at the cinema and not streaming platforms such as Netflix.
+
+Ratings
+[ ]
+print (f'Average rating in the dataset: {np.mean(train["rating"])}')
+
+#bar graph plot to show the ratings of movies given by users
+cnt_srs = train['rating'].value_counts()
+
+plt.figure(figsize=(6,7))
+sns.barplot(x = cnt_srs.index, y = cnt_srs.values, alpha=0.8,palette='GnBu_d')
+plt.title('Movie Ratings of Users', fontsize=15)
+plt.ylabel('Number of Users', fontsize=15)
+plt.xlabel('Ratings', fontsize=30)
+plt.xticks([0,1,2,3,4,5,6,7,8,9],['0.5','1.0','1.5','2.0','2.5','3.0','3.5','4.0','4.5','5.0'])
+plt.show()
+
+Observation:
+
+The average rating of around 3.5 indicates that users generally have a positive inclination towards their ratings and are not overly critical in their feedback. Ratings below 2.0 are relatively uncommon. Another plausible explanation could be that users only rate movies they enjoy, leading to fewer ratings for unenjoyable ones. Personally, I've left a movie theater just 15 minutes into a bad film, considering it a waste of time and accepting the movie ticket cost as unrecoverable. The most common rating in the chart is 4.0, suggesting that users often provide whole-number ratings (e.g., 4.0) rather than fractional ratings (e.g., 3.5).
+
+[ ]
+# Calculate average rating for each movie and arrange from highest to lowest
+movies_ranking = movies_metadata_df[['title','rating']].groupby('title').mean().sort_values('rating', ascending=False)
+[ ]
+movies_ranking['No_of_ratings'] = movies_metadata_df.groupby('title')['rating'].count()
+[ ]
+a = movies_ranking.sort_values(by=['No_of_ratings', 'rating'], ascending=False).head()
+[ ]
+# Average rating of movies in the dataset
+avg_rating = train.groupby('movieId')['rating'].mean()
+
+# Plotting the results
+plt.figure(figsize=(10,8))
+avg_rating.plot(kind='hist')
+plt.ylabel('Frequency')
+plt.xlabel('Movie Rating')
+plt.title('Average ratings of movies with 100 or more viewers')
+plt.show()
+
+Observation:
+
+Most of the movies are not common and were watched by a few number of people, so even if two people rated the movie 5 stars it wouldn't be enough to classify a movie as a 5 star rated movie so 100 is a fair number.
+
+Most people rated the movie between 3 and 4 because they probably felt that a rating of 5 would be overrating the movie.
+
+[ ]
+# Set plot size
+sns.set(rc={'figure.figsize':(10,8)})
+
+# Plot Number of rating for every rating category.
+sns.scatterplot(x='rating', y='No_of_ratings', data=movies_ranking, color='orange')
+plt.title('Number of ratings per average rating per movie')
+plt.xlabel('Rating')
+plt.ylabel('Number of ratings')
+plt.show()
+
+Observation:
+
+The above plot shows that movies that receive a higher number of ratings also tend to receive higher rating scores, lending further credence to the belief that popular movies (high number of views) are more highly rated. In the plot below, it can be seen that movies with more than 100 ratings obtain a rating of 3.5 as their mode.
+
+The ratings do not start from zero because the minimum rating one can give is 0.5 or 1 star.
+
+The table below shows the correlation between ratings count and rating (score) for each movie director. Those directors whose movies have received the most number of ratings typically also get higher rating scores for their movies.
+
+[ ]
+best_director = pd.DataFrame(movies_metadata_df.groupby('director')['rating'].mean().
+                             sort_values(ascending=False))
+best_director['No_of_ratings'] = movies_metadata_df.groupby('director')['rating'].count()
+best_director.sort_values(by=['No_of_ratings', 'rating'], ascending=False).head(10)
+
+[ ]
+#A visual indication of the correlation between number of ratings and rating scores for directors.
+
+# Set plot size
+sns.set(rc={'figure.figsize':(10,8)})
+
+sns.scatterplot(x = 'rating', y = 'No_of_ratings', data = best_director, color='pink').set_title('Count of average rating per director', color='red')
+plt.xlabel('Ratings')
+plt.ylabel('Number of Ratings')
+plt.show()
+
+Observation:
+
+A majority of people who gave ratings gave a rating of above 2.5. Most people rate a movie based on the director and not the content therefore we would assume that they felt a rating of between 3 and 4 is more appropriate.
+
+[ ]
+# return number of rows by the year 
+year_counts = movies[["title", "year"]].groupby("year").size()
+
+fig, ax = plt.subplots(figsize=(20, 10))
+ax.plot(year_counts.index, year_counts.values)
+ax.xaxis.set_major_locator(plt.MaxNLocator(15)) # changes the number of xticks we see
+plt.title("Number of movies per year", fontsize=16)
+plt.xlabel("Year", fontsize= 14)
+plt.ylabel("Number of Movies Released", fontsize=14)
+plt.show()
+
+Observations:
+
+We see that as the years go by, the total number of movies released per year increased. This might be from the fact that as the technology advances, the more movies are released and also more money is generated through the movie industries so everyone will want to release their movies
+
+[ ]
+# Create 'year' df that averages release year for each user
+years = pd.merge(train, movies, on='movieId')[['userId','year']].dropna()
+years['year'] = years['year'].astype('int64')
+years.groupby('userId').mean()
+
+# Set plot size
+sns.set(rc={'figure.figsize':(20,10)})
+
+plt.figure(figsize=(12,10))
+years['year'].plot(kind='hist', color = 'orange')
+plt.ylabel('Frequency')
+plt.xlabel('Average release year per user')
+plt.title('Distribution of release years for movies rated by users')
+plt.show()
+
+The above graph shows an increasing trend in movie releases since 1995.The years 2015 and 2016 are the years where the highest number of movies were released.What the diagram above communicates to us is that as the years progress, the amount of movies being released have significantly increased.
+
+An indication as to how rating counts vary by day of week
+
+[ ]
+# Convert the timestamp values into datetime format
+train['timestamp'] = pd.to_datetime(train['timestamp'], unit='ms')
+train.head()
+
+[ ]
+# Extract the day of the week from the newly-formatted timestamp column
+train['day_of_week'] = train['timestamp'].dt.dayofweek
+days = {0:'Mon',1:'Tue',2:'Wed',3:'Thur',4:'Fri',5:'Sat',6:'Sun'}
+train['day_of_week'] = train['day_of_week'].apply(lambda x: days[x])
+train.tail()
+
+[ ]
+# Plot number of ratings by day of week
+train['day_of_week'].value_counts().plot(kind='bar', color = 'green')
+plt.title('Ratings per day of the week')
+plt.xlabel('Day of the week')
+plt.ylabel('Proportion of ratings created/collected')
+plt.show()
+
+We calcated the average rating for each day of the week and we can see that we receive the most ratings on a Sunday and on a Saturday. As that would be the time that users are more settled at home, because it would be end of week and thats the time that most users would have time to watch movies.
+
+Top 10 Total Number of ratings per Movie
+[ ]
+# 10 Most Rated Movies
+data = train.groupby('movieId')['rating'].size().sort_values(ascending=False)
+da = {'count_rating': data.values, 'movieId': data.index}
+# Create DataFrame.
+df = pd. DataFrame(da)
+df = df[:10]
+df = pd.merge(df,movies)
+
+# Plot the 10 Most Rated Movies
+plot = plt.figure(figsize=(15, 10))
+plt.title('10 Most Rated Movies\n', fontsize=20)
+sns.barplot(y="title", data=df,
+              x = 'count_rating',
+              palette="nipy_spectral_r")
+plt.show()
+
+Observation: The most rated movie 'The Shawshank redemption' is a movie about Andy Dufresne (Tim Robbins) who is sentenced to two consecutive life terms in prison for the murders of his wife and her lover and is sentenced to a tough prison. However, only Andy knows he didn't commit the crimes. While there, he forms a friendship with Red (Morgan Freeman), experiences brutality of prison life, adapts, helps the warden, etc., all in 19 years. It truly is a timeless movie .I've watched it and i really enjoyed and I'm definitely giving it a 5.
+
+10 Least Rated Movies
+[ ]
+# 10 Least Rated Movies
+data = train.groupby('movieId')['rating'].size().sort_values(ascending=False)
+da = {'count_rating': data.values, 'movieId': data.index}
+# Create DataFrame.
+df = pd. DataFrame(da)
+df = df[-10:]
+df = pd.merge(df,movies)
+
+# Plot the 10 Least Rated Movies
+plot = plt.figure(figsize=(15, 10))
+plt.title('Least 10 total ratings per Movie\n', fontsize=20)
+sns.barplot(y="title", data=df,
+              x = 'count_rating',
+              palette="nipy_spectral_r")
+plt.show()
+
+Observation: The movies with the lowest ratings are movies that mostly portray strange situations, surprises, surrealism, plot twists, black humor. We would assume that a large number of people are not comfortable with those type of movies.
+
+[ ]
+#Create variable "budget_per_genre"
+budget_per_genre=movies_imdb[['genres','budget']].explode('genres')
+budget_per_genre['budget']=budget_per_genre['budget'].str.replace(',', "").str.extract('(\d+)', expand=False).astype('float')
+[ ]
+budget_per_genre
+
+[ ]
+budget_per_genre.genres = budget_per_genre.genres.apply(lambda x: x.split('|'))
+
+
+budget_per_genre = pd.DataFrame([(tup.budget, d) for tup in budget_per_genre.itertuples() for d in tup.genres],
+                             columns=['budget', 'genres'])
+
+budget_per_genre.dropna()
+
+[ ]
+#Plotting an average budget per genre using a line-plot
+plt.figure(figsize=(10,6))
+axes=sns.lineplot(x="genres", y="budget", data=budget_per_genre)
+axes.set_title('Average Budget Per Genre',fontsize=15)
+plt.xticks(rotation=90)
+plt.show()
+
+Observation: Movies displayed on IMAX require the largest budget as IMAX are promoted as premium viewing options, thus have prices as high relative to regular-format movies as the market will bear. The extra costs of running an IMAX screening and the willingness of customers willing to pay the extra money for the IMAX experience.
+
+The War genre clearly requires the biggest budget, and documentaries are the least expensive.
+
+[ ]
+import plotly.express as px  #imporing visualization library plotly
+genre_count=movies_metadata_df['director'].value_counts()
+genre_count = genre_count.dropna()
+genre_count = genre_count[:10]
+genre_count=pd.DataFrame(genre_count).reset_index()
+popular_genre=genre_count.rename(columns={'index':'Directors','director':'Count of ratings'})
+fig = px.bar(popular_genre, y='Count of ratings', x='Directors', text='Directors')
+fig.update_layout(title_text='<b>Common Directors<b>',title_x=0.5)
+fig.show()
+
+Observation: Quentin Tarantino, in full Quentin Jerome Tarantino is an american director and screenwriter whose films are noted for their stylized violence, razor-sharp dialogue, and fascination with film and pop culture.and he believes that crime can make a movie pop.Tarantino's films often feature graphic violence, a tendency which has sometimes been criticized.
+
+Runtime
+[ ]
+#Plotting distribution of movies's duration using dist-plot
+plt.figure(figsize = (10,6))
+axes=sns.distplot(imdb_data['runtime'],color='green')
+axes.set_title('Runtime Distribution',fontsize=15)
+plt.show()
+
+Observation: The most common duration of a movie is around 90 minutes.
+
+[ ]
+movies = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/movies.csv')
+imdb_data = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/imdb_data.csv')
+[ ]
+movies_imdb= pd.merge(imdb_data,movies,on ='movieId',how ='inner')
+[ ]
+#Create variable "runtime_genre"
+runtime_per_genre=movies_imdb[['genres','runtime']].explode('genres')
+[ ]
+runtime_per_genre.genres = runtime_per_genre.genres.apply(lambda x: x.split('|'))
+
+
+runtime_per_genre = pd.DataFrame([(tup.runtime, d) for tup in runtime_per_genre.itertuples() for d in tup.genres],
+                             columns=['runtime', 'genres'])
+
+runtime_per_genre.dropna()
+
+[ ]
+#Plotting an average runtime per genre using line-plot
+plt.figure(figsize=(10,6))
+axes=sns.lineplot(x="genres", y="runtime", data=runtime_per_genre)
+axes.set_title('Average Runtime Per Genre',fontsize=15)
+plt.xticks(rotation=90)
+plt.show()
+
+Observation: It can be observed that Western movies have the highest runtime whilst animation movies have the least runtime. We see that animation has the least runtime which is caused by the cost and the time involved, also because most animated films are aimed at children and children have a short attention span.
+
+[ ]
+#Plotting top 10 movie directors using a count-plot
+plt.figure(figsize = (10,6))
+director=imdb_data['director']#.explode()
+axes=sns.countplot(y=director, order = director.value_counts().index[1:11],color='black')
+axes.set_title('Top 10 Most Popular Movie Directors',fontsize=15)
+plt.xticks(rotation=90)
+plt.show()
+
+Observation: A number of popular directors based on the number of movies they have directed. We can observe that the most popular movie director is Luc Besson,because he has directed the most movies.
+
+[ ]
+imdb_data = pd.read_csv('/kaggle/input/edsa-movie-recommendation-predict/imdb_data.csv')
+[ ]
+imdb_data['title_cast']=imdb_data['title_cast'].fillna("Unknown")
+imdb_data['plot_keywords']=imdb_data['plot_keywords'].fillna("Unknown")
+
+# Create dataframe containing only the movieId and title cast
+title_cast = pd.DataFrame(imdb_data[['movieId', 'title_cast']],
+                             columns=['movieId', 'title_cast'])
+# Create dataframe containing only the movieId and keywords
+plot_keywords = pd.DataFrame(imdb_data[['movieId', 'plot_keywords']],
+                             columns=['movieId', 'plot_keywords'])
+
+# Split genres seperated by "|" and create a list containing the genres allocated to each movie
+title_cast.title_cast = title_cast.title_cast.apply(lambda x: x.split('|'))
+plot_keywords.plot_keywords = plot_keywords.plot_keywords.apply(lambda x: x.split('|'))
+
+# Create expanded dataframe where each movie-genre combination is in a seperate row
+title_cast = pd.DataFrame([(tup.movieId, d) for tup in title_cast.itertuples() for d in tup.title_cast],
+                             columns=['movieId', 'title_cast'])
+plot_keywords = pd.DataFrame([(tup.movieId, d) for tup in plot_keywords.itertuples() for d in tup.plot_keywords],
+                             columns=['movieId', 'plot_keywords'])
+
+
+title_cast.head()
+
+[ ]
+title_cast=title_cast[title_cast!= "Unknown"]
+title_cast
+
+[ ]
+#Plotting popular cast using a count-plot
+plt.figure(figsize = (10,6))
+title_cast=title_cast.title_cast.explode()
+ax=sns.countplot(y=title_cast, order = title_cast.value_counts().index[:20],color='purple')
+ax.set_title('Top 20 Popular Actors',fontsize=15)
+plt.xticks(rotation=90)
+plt.show()
+
+Observation: Samuel L Jackson seems to be the most popular actor as he appeared in over 80 movies from our database.
+
+Modelling phase
+Here you can apply the models outline in the Intro to Recommender Notebook. You only need to apply one version be it Content based or Collabrative method
+
+Collabrative method
+Collaborative filtering (CF) is a technique used by recommender systems. Collaborative filtering has two senses, a narrow one and a more general one.
+
+In the newer, narrower sense, collaborative filtering is a method of making automatic predictions (filtering) about the interests of a user by collecting preferences or taste information from many users (collaborating). The underlying assumption of the collaborative filtering approach is that if a person A has the same opinion as a person B on an issue, A is more likely to have B's opinion on a different issue than that of a randomly chosen person. For example, a collaborative filtering recommendation system for preferences in television programming could make predictions about which television show a user should like given a partial list of that user's tastes (likes or dislikes). Note that these predictions are specific to the user, but use information gleaned from many users. This differs from the simpler approach of giving an average (non-specific) score for each item of interest, for example based on its number of votes.
+
+In the more general sense, collaborative filtering is the process of filtering for information or patterns using techniques involving collaboration among multiple agents, viewpoints, data sources, etc. Applications of collaborative filtering typically involve very large data sets. Collaborative filtering methods have been applied to many different kinds of data including: sensing and monitoring data, such as in mineral exploration, environmental sensing over large areas or multiple sensors; financial data, such as financial service institutions that integrate many financial sources; or in electronic commerce and web applications where the focus is on user data, etc. The remainder of this discussion focuses on collaborative filtering for user data, although some of the methods and approaches may apply to the other major applications as well.
+
+Advantages
+
+No domain knowledge necessary We don't need domain knowledge because the embeddings are automatically learned.
+
+Serendipity The model can help users discover new interests. In isolation, the ML system may not know the user is interested in a given item, but the model might still recommend it because similar users are interested in that item.
+
+Great starting point To some extent, the system needs only the feedback matrix to train a matrix factorization model. In particular, the system doesn't need contextual features. In practice, this can be used as one of multiple candidate generators.
+
+Disadvantages
+
+Cannot handle fresh items The prediction of the model for a given (user, item) pair is the dot product of the corresponding embeddings. So, if an item is not seen during training, the system can't create an embedding for it and can't query the model with this item. This issue is often called the cold-start problem. However, the following techniques can address the cold-start problem to some extent:
+
+Hard to include side features for query/item
+
+Side features* are any features beyond the query or item ID. For movie recommendations, the side features might include country or age. Including available side features improves the quality of the model. Although it may not be easy to include side features in WALS, a generalization of WALS makes this possible.
+
+[ ]
+# Apply your modelling here
+cols = ['userId', 'movieId','rating']
+reader = Reader(rating_scale=(0.5, 5.0))
+data = Dataset.load_from_df(train[cols],reader)
+trainset, testset = train_test_split(data, test_size=0.10, random_state=42)
+#cross_validate(svd, data, measures=['RMSE', 'MAE'], cv=2, verbose=True)
+[ ]
+nmf_model = NMF(n_epochs=20, n_factors=90, random_state=42,verbose=True)
+nmf_model.fit(trainset)
+nmf_predictions =nmf_model.test(testset)
+nmf_rmse = accuracy.rmse(nmf_predictions)
+Processing epoch 0
+Processing epoch 1
+Processing epoch 2
+Processing epoch 3
+Processing epoch 4
+Processing epoch 5
+Processing epoch 6
+Processing epoch 7
+Processing epoch 8
+Processing epoch 9
+Processing epoch 10
+Processing epoch 11
+Processing epoch 12
+Processing epoch 13
+Processing epoch 14
+Processing epoch 15
+Processing epoch 16
+Processing epoch 17
+Processing epoch 18
+Processing epoch 19
+RMSE: 1.7269
+[ ]
+svd_model = SVD(n_epochs=20,n_factors=400,init_std_dev=0.01,random_state=42,verbose=True)
+svd_model.fit(trainset)
+svd_predictions = svd_model.test(testset)
+svd_rmse = accuracy.rmse(svd_predictions)
+Processing epoch 0
+Processing epoch 1
+Processing epoch 2
+Processing epoch 3
+Processing epoch 4
+Processing epoch 5
+Processing epoch 6
+Processing epoch 7
+Processing epoch 8
+Processing epoch 9
+Processing epoch 10
+Processing epoch 11
+Processing epoch 12
+Processing epoch 13
+Processing epoch 14
+Processing epoch 15
+Processing epoch 16
+Processing epoch 17
+Processing epoch 18
+Processing epoch 19
+RMSE: 0.8102
+[ ]
+cc_model = CoClustering(n_epochs=20,random_state=42)
+cc_model.fit(trainset)
+cc_predictions = cc_model.test(testset)
+cc_rmse=accuracy.rmse(cc_predictions)
+RMSE: 0.8999
+Model performance
+
+[ ]
+rmse_scores =[nmf_rmse,cc_rmse,svd_rmse]
+trained_models =['NMF','CoClustering','SVD']
+model_performance = pd.DataFrame({'model':trained_models,'RMSE':rmse_scores})
+[ ]
+model_performance.sort_values(by='RMSE')
+
+[ ]
+fig, ax = plt.subplots(figsize=(14,7))
+sns.barplot(data=model_performance.sort_values(by='RMSE'), x='model', y='RMSE', palette="CMRmap", edgecolor="black", ax=ax)
+ax.set_xlabel("trained_models")
+ax.set_ylabel('rmse_Scores')
+ax.set_yticklabels(['{:,}'.format(int(x)) for x in ax.get_yticks().tolist()])
+for p in ax.patches:
+    ax.text(p.get_x() + p.get_width()/2, p.get_y() + p.get_height(), round(p.get_height(),3), fontsize=12, ha="center", va='bottom')
+plt.title('Model Accuracy By RMSE Score', fontsize=14)
+plt.show()
+
+[ ]
+# Hypertuning Singular Value Decomposition
+trainset, testset = train_test_split(data, test_size=0.01, random_state=42)
+# Modelling
+svd_algo_hyper = SVD(lr_all=0.0085,
+                     reg_all=0.01,
+                     n_epochs=20,
+                     init_std_dev=0.001,
+                     random_state= 450)
+svd_algo_hyper.fit(trainset)
+# Predicting
+svd_hyper_predictions = svd_algo_hyper.test(testset)
+# Convert the predictions to dataframe
+accuracy.rmse(svd_hyper_predictions)
+RMSE: 0.7898
+0.7897912021959559
+Content-based Filtering
+Content-based filtering uses item features to recommend other items similar to what the user likes, based on their previous actions or explicit feedback.
+
+To demonstrate content-based filtering, let’s hand-engineer some features for the Google Play store. The following figure shows a feature matrix where each row represents an app and each column represents a feature. Features could include categories (such as Education, Casual, Health), the publisher of the app, and many others. To simplify, assume this feature matrix is binary: a non-zero value means the app has that feature.
+
+You also represent the user in the same feature space. Some of the user-related features could be explicitly provided by the user. For example, a user selects "Entertainment apps" in their profile. Other features can be implicit, based on the apps they have previously installed. For example, the user installed another app published by Science R Us.
+
+The model should recommend items relevant to this user. To do so, you must first pick a similarity metric (for example, dot product). Then, you must set up the system to score each candidate item according to this similarity metric. Note that the recommendations are specific to this user, as the model did not use any information about other users.
+
+Advantages : The model doesn't need any data about other users, since the recommendations are specific to this user. This makes it easier to scale to a large number of users. The model can capture the specific interests of a user, and can recommend niche items that very few other users are interested in.
+
+Disadvantages : Since the feature representation of the items are hand-engineered to some extent, this technique requires a lot of domain knowledge. Therefore, the model can only be as good as the hand-engineered features. The model can only make recommendations based on existing interests of the user. In other words, the model has limited ability to expand on the users' existing interests.
+
+How it works
+[ ]
+movies_metadata_df = pd.merge(movies_metadata_df,tags)
+
+movies_metadata_df['directors_tags'] = (pd.Series(movies_metadata_df[['director', 'tag']]
+                      .fillna('')
+                      .values.tolist()).str.join(' '))
+
+# Convienient indexes to map between book titles and indexes of 
+# the books dataframe
+titles = movies_metadata_df['title']
+indices = pd.Series(movies_metadata_df.index, index=movies_metadata_df['title'])
+display(indices.head(20))
+
+[ ]
+tf = TfidfVectorizer(analyzer='word', ngram_range=(1,2),
+                     min_df=0, stop_words='english')
+
+# Produce a feature matrix, where each row corresponds to a book,
+# with TF-IDF features as columns 
+tf_authTags_matrix = tf.fit_transform(movies_metadata_df['directors_tags'])
+[ ]
+cosine_sim_authTags = cosine_similarity(tf_authTags_matrix,
+                                        tf_authTags_matrix)
+print (cosine_sim_authTags.shape)
+(70, 70)
+[ ]
+def content_generate_top_N_recommendations(book_title, N=10):
+    # Convert the string book title to a numeric index for our 
+    # similarity matrix
+    b_idx = indices[book_title]
+    # Extract all similarity values computed with the reference book title
+    sim_scores = list(enumerate(cosine_sim_authTags[b_idx]))
+    # Sort the values, keeping a copy of the original index of each value
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)
+    # Select the top-N values for recommendation
+    sim_scores = sim_scores[1:N]
+    # Collect indexes 
+    book_indices = [i[0] for i in sim_scores]
+    # Convert the indexes back into titles 
+    return titles.iloc[book_indices]
+[ ]
+content_generate_top_N_recommendations('The DUFF', N=10)
+0                        Aloha
+1             Dead Man Walking
+2                 Lost Highway
+3                      Shrooms
+4       No Country for Old Men
+5       No Country for Old Men
+6         Arsenic and Old Lace
+7                 Ender's Game
+8    What We Do in the Shadows
+Name: title, dtype: object
+[ ]
+#params = {'n_epochs':20, #[30,40,50],
+#          'n_factors':400, #[100,200,300],
+  #         'init_std_dev':0.005, #[0.005,0.05,0.1],
+   #        'random_state':[42]} 
+#metrics = {"RMSE": [rmse_scores]}
+
+#experiment.log_parameters(params)
+#experiment.log_metrics(metrics)
+#experiment.end()
+COMET WARNING: Cannot safely convert [[1.7269005190071283, 0.8999280370213076, 0.8102209133775269]] object to a scalar value, using its string representation for logging. Resulting string might be invalid
+COMET INFO: ---------------------------------------------------------------------------------------
+COMET INFO: Comet.ml Experiment Summary
+COMET INFO: ---------------------------------------------------------------------------------------
+COMET INFO:   Data:
+COMET INFO:     display_summary_level : 1
+COMET INFO:     url                   : https://www.comet.com/orifuna-oreo/unsupervised-learning/f571e0df5a2140e197ae8add30bee0f8
+COMET INFO:   Metrics:
+COMET INFO:     RMSE : [[1.7269005190071283, 0.8999280370213076, 0.8102209133775269]]
+COMET INFO:   Parameters:
+COMET INFO:     init_std_dev : 0.005
+COMET INFO:     n_epochs     : 20
+COMET INFO:     n_factors    : 400
+COMET INFO:     norm         : l2
+COMET INFO:     random_state : [42]
+COMET INFO:     smooth_idf   : True
+COMET INFO:     sublinear_tf : False
+COMET INFO:     use_idf      : True
+COMET INFO:   Uploads:
+COMET INFO:     conda-environment-definition : 1
+COMET INFO:     conda-info                   : 1
+COMET INFO:     conda-specification          : 1
+COMET INFO:     environment details          : 1
+COMET INFO:     filename                     : 1
+COMET INFO:     installed packages           : 1
+COMET INFO:     notebook                     : 1
+COMET INFO:     os packages                  : 1
+COMET INFO:     source_code                  : 1
+COMET INFO: 
+COMET INFO: Please wait for metadata to finish uploading (timeout is 3600 seconds)
+Conclusion
+Throughout this notebook we have taken a comprehensive look at the data in order to gain insights and assist us in predicting ratings as well as building recommendation systems.
+
+For Both the collaborative and content-based filtering we implemented a few models to find a model that gives us the best rmse score which is a representation of your model performance. The model with the best rmse score was the singular value decomposition(SVD) that we hypertuned. The SVD performed better since it is very good at noise detection and does this by reducing the dimensions of a matrix in order to make certain subsequent matrix calculations simpler. By implementing SVD, which returned a very good RMSE score of 0.78 we can conclude that the algorithm implemented for our app is very good at movie recommendations.
+
+Generate your outputs here
+Prepare Submission File We make submissions in CSV files. Your submissions usually have two columns: an ID column and a prediction column. The ID field comes from the test data (keeping whatever name the ID field had in that data, which for the data is the string 'Id'). The prediction column will use the name of the target field.
+
+We will create a DataFrame with this data, and then use the dataframe's to_csv method to write our submission file. Explicitly include the argument index=False to prevent pandas from adding another column in our csv file.
+
+[ ]
+pred_svd_hyper = [svd_algo_hyper.predict(row.userId,row.movieId) for idx,row in test.iterrows()]
+# Converting the predictions to a dataframe
+test_pred_svd_hyper = pd.DataFrame(pred_svd_hyper)
+[ ]
+# Rename the fields in the prediction dataframe
+test_pred_svd_hyper.drop(['r_ui', 'details'], axis=1, inplace=True)
+test_pred_svd_hyper =test_pred_svd_hyper.rename(columns={'uid':'userId',
+                                                          'iid':'movieId',
+                                                          'est':'rating'})
+test_pred_svd_hyper.head()
+
+[ ]
+# Concatenate each userId and movieId into a one column for submission
+test_pred_svd_hyper['Id'] = test_pred_svd_hyper['userId'].astype(str).str.zfill(1) + '_' + test_pred_svd_hyper['movieId'].astype(str).str.zfill(1)
+[ ]
+svd_predictions_hyper = test_pred_svd_hyper[['Id','rating']]
+svd_predictions_hyper.head()
+
+[ ]
+svd_predictions_hyper.to_csv('./svd_pre_hyper_submission.csv', index=False)
+[ ]
+with open('nmf_pkl', 'wb') as file:
+    pickle.dump(nmf_model, file)
+[ ]
+with open('cc_pkl', 'wb') as file:
+    pickle.dump(cc_model, file)
+[ ]
+with open('svd_pkl', 'wb') as file:
+    pickle.dump(svd_model, file)
+[ ]
+with open('hyper_pkl', 'wb') as file:
+    pickle.dump(svd_algo_hyper, file)
+[ ]
+with open('colab_pkl', 'wb') as file:
+    pickle.dump(tf_authTags_matrix, file)
+Colab paid products - Cancel contracts here
